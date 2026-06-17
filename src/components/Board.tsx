@@ -18,9 +18,10 @@ interface Props {
   fitScores: Record<string, number>
   onMove: (id: string, stage: Stage) => void
   onSelect: (id: string) => void
+  onAdd: (stage: Stage) => void
 }
 
-export function Board({ applications, fitScores, onMove, onSelect }: Props) {
+export function Board({ applications, fitScores, onMove, onSelect, onAdd }: Props) {
   const [activeApp, setActiveApp] = useState<Application | null>(null)
 
   const sensors = useSensors(
@@ -60,6 +61,7 @@ export function Board({ applications, fitScores, onMove, onSelect }: Props) {
             applications={applications.filter(a => a.stage === stage.id)}
             fitScores={fitScores}
             onSelect={onSelect}
+            onAdd={() => onAdd(stage.id)}
           />
         ))}
       </div>

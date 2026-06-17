@@ -74,7 +74,13 @@ export const update = mutation({
       })
     }
 
-    await ctx.db.patch(id, patch)
+    // Auto-fill applied date when first moved to 'applied'
+    const autoDate =
+      patch.stage === 'applied' && !app.appliedDate && patch.appliedDate === undefined
+        ? { appliedDate: new Date().toISOString().split('T')[0] }
+        : {}
+
+    await ctx.db.patch(id, { ...patch, ...autoDate })
   },
 })
 

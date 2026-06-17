@@ -9,7 +9,7 @@ import type { Filters } from './components/FilterBar'
 import { AddApplicationDrawer } from './components/AddApplicationDrawer'
 import { ApplicationDetail } from './components/ApplicationDetail'
 import { ResumeDrawer } from './components/ResumeDrawer'
-import type { Application } from './types'
+import type { Application, Stage } from './types'
 
 function applyFilters(
   apps: Application[],
@@ -56,9 +56,15 @@ function BoardApp() {
   )
 
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerDefaultStage, setDrawerDefaultStage] = useState<Stage>('interested')
   const [resumeDrawerOpen, setResumeDrawerOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+
+  function openAddForStage(stage: Stage) {
+    setDrawerDefaultStage(stage)
+    setDrawerOpen(true)
+  }
 
   const visibleApplications = applyFilters(applications, filters, fitScores)
   const selectedApp = selectedId ? (applications.find(a => a.id === selectedId) ?? null) : null
@@ -129,6 +135,7 @@ function BoardApp() {
             fitScores={fitScores}
             onMove={moveApplication}
             onSelect={setSelectedId}
+            onAdd={openAddForStage}
           />
         )}
       </main>
@@ -137,6 +144,7 @@ function BoardApp() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onAdd={addApplication}
+        defaultStage={drawerDefaultStage}
       />
       <ResumeDrawer
         open={resumeDrawerOpen}

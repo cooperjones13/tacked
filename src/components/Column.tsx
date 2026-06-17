@@ -7,9 +7,10 @@ interface Props {
   applications: Application[]
   fitScores: Record<string, number>
   onSelect: (id: string) => void
+  onAdd: () => void
 }
 
-export function Column({ stage, applications, fitScores, onSelect }: Props) {
+export function Column({ stage, applications, fitScores, onSelect, onAdd }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
 
   return (
@@ -26,6 +27,14 @@ export function Column({ stage, applications, fitScores, onSelect }: Props) {
         <span className="ml-2 text-[12px] text-ink-muted tabular-nums">
           {applications.length}
         </span>
+        <button
+          type="button"
+          onClick={onAdd}
+          aria-label={`Add application to ${stage.label}`}
+          className="ml-auto text-[18px] leading-none text-ink-muted/40 hover:text-accent transition-colors focus-visible:ring-2 focus-visible:ring-accent rounded"
+        >
+          +
+        </button>
       </div>
 
       <div

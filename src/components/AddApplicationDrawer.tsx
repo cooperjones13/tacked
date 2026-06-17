@@ -47,19 +47,20 @@ interface Props {
   open: boolean
   onClose: () => void
   onAdd: (data: FormData) => void
+  defaultStage?: Stage
 }
 
-export function AddApplicationDrawer({ open, onClose, onAdd }: Props) {
+export function AddApplicationDrawer({ open, onClose, onAdd, defaultStage }: Props) {
   if (!open) return null
-  return <ModalContent onClose={onClose} onAdd={onAdd} />
+  return <ModalContent onClose={onClose} onAdd={onAdd} defaultStage={defaultStage} />
 }
 
-function ModalContent({ onClose, onAdd }: Omit<Props, 'open'>) {
+function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
-  const [form, setForm] = useState<FormData>(INITIAL)
+  const [form, setForm] = useState<FormData>({ ...INITIAL, stage: defaultStage ?? 'interested' })
   const firstRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -184,12 +185,21 @@ function ModalContent({ onClose, onAdd }: Omit<Props, 'open'>) {
             </Field>
 
             <Field label="Applied date">
-              <input
-                type="date"
-                value={form.appliedDate ?? ''}
-                onChange={e => set('appliedDate', e.target.value || null)}
-                className={inputCls}
-              />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={form.appliedDate ?? ''}
+                  onChange={e => set('appliedDate', e.target.value || null)}
+                  className={`${inputCls} flex-1`}
+                />
+                <button
+                  type="button"
+                  onClick={() => set('appliedDate', new Date().toISOString().split('T')[0])}
+                  className="px-3 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent whitespace-nowrap"
+                >
+                  Today
+                </button>
+              </div>
             </Field>
 
             <Field label="Notes">

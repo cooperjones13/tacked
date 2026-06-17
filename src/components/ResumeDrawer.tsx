@@ -55,7 +55,7 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
       ref={dialogRef}
       onClick={handleBackdropClick}
       aria-label={`Preview: ${label}`}
-      className="w-full max-w-3xl max-h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
+      className="w-full max-w-3xl h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
     >
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border shrink-0">

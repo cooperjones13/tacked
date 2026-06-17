@@ -32,7 +32,7 @@ export function FilterBar({ filters, onChange, visibleCount, totalCount }: Props
   }
 
   return (
-    <div className="flex items-center gap-2 mb-6 flex-wrap">
+    <div className="flex items-center gap-2 flex-wrap">
       <input
         type="search"
         placeholder="Search by company, role, location…"

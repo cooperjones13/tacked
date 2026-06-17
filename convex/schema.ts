@@ -24,6 +24,7 @@ export default defineSchema({
 
   resumes: defineTable({
     storageId: v.id('_storage'),
+    filename: v.string(),
     label: v.string(),
     createdAt: v.number(),
   }),

@@ -16,13 +16,18 @@ export const generateUploadUrl = mutation({
 export const create = mutation({
   args: {
     storageId: v.id('_storage'),
+    filename: v.string(),
     label: v.string(),
   },
   handler: async (ctx, args) => {
-    return ctx.db.insert('resumes', {
-      ...args,
-      createdAt: Date.now(),
-    })
+    return ctx.db.insert('resumes', { ...args, createdAt: Date.now() })
+  },
+})
+
+export const updateLabel = mutation({
+  args: { id: v.id('resumes'), label: v.string() },
+  handler: async (ctx, { id, label }) => {
+    await ctx.db.patch(id, { label })
   },
 })
 

@@ -18,8 +18,8 @@ interface Props {
 }
 
 const ctrl =
-  'px-3 py-2 rounded-button border border-border bg-canvas text-[13px] text-ink ' +
-  'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1'
+  'px-3 py-2 rounded-button border border-border bg-card text-[13px] text-ink ' +
+  'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 shadow-card'
 
 export function FilterBar({ filters, onChange, visibleCount, totalCount }: Props) {
   const isFiltered =

@@ -16,7 +16,7 @@ export const list = query({
   handler: async (ctx) => {
     const userId = await requireUser(ctx)
     const all = await ctx.db.query('resumes').order('desc').collect()
-    return all.filter(r => !r.userId || r.userId === userId)
+    return all.filter(r => r.userId === userId)
   },
 })
 
@@ -25,7 +25,7 @@ export const getUrl = query({
   handler: async (ctx, { resumeId }) => {
     const userId = await requireUser(ctx)
     const resume = await ctx.db.get(resumeId)
-    if (!resume || (resume.userId && resume.userId !== userId)) return null
+    if (!resume || resume.userId !== userId) return null
     return ctx.storage.getUrl(resume.storageId)
   },
 })
@@ -54,7 +54,7 @@ export const updateLabel = mutation({
   handler: async (ctx, { id, label }) => {
     const userId = await requireUser(ctx)
     const resume = await ctx.db.get(id)
-    if (!resume || (resume.userId && resume.userId !== userId)) throw new Error('Not found')
+    if (!resume || resume.userId !== userId) throw new Error('Not found')
     await ctx.db.patch(id, { label })
   },
 })
@@ -64,7 +64,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const userId = await requireUser(ctx)
     const resume = await ctx.db.get(id)
-    if (!resume || (resume.userId && resume.userId !== userId)) throw new Error('Not found')
+    if (!resume || resume.userId !== userId) throw new Error('Not found')
     await ctx.storage.delete(resume.storageId)
     await ctx.db.delete(id)
   },

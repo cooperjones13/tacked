@@ -12,7 +12,7 @@ export const listFitScores = query({
   handler: async (ctx) => {
     const userId = await requireUser(ctx)
     const all = await ctx.db.query('analyses').order('desc').collect()
-    const userAll = all.filter(a => !a.userId || a.userId === userId)
+    const userAll = all.filter(a => a.userId === userId)
     const seen = new Set<string>()
     return userAll
       .filter(a => {

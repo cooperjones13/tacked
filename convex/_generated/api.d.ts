@@ -11,6 +11,7 @@
 import type * as ai from "../ai.js";
 import type * as analyses from "../analyses.js";
 import type * as applications from "../applications.js";
+import type * as migrations from "../migrations.js";
 import type * as resumes from "../resumes.js";
 import type * as stageHistory from "../stageHistory.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   analyses: typeof analyses;
   applications: typeof applications;
+  migrations: typeof migrations;
   resumes: typeof resumes;
   stageHistory: typeof stageHistory;
 }>;

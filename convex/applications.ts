@@ -24,7 +24,7 @@ export const list = query({
   handler: async (ctx) => {
     const userId = await requireUser(ctx)
     const all = await ctx.db.query('applications').collect()
-    return all.filter(a => !a.userId || a.userId === userId)
+    return all.filter(a => a.userId === userId)
   },
 })
 
@@ -62,7 +62,7 @@ export const update = mutation({
   handler: async (ctx, { id, ...patch }) => {
     const userId = await requireUser(ctx)
     const app = await ctx.db.get(id)
-    if (!app || (app.userId && app.userId !== userId)) throw new Error('Not found')
+    if (!app || app.userId !== userId) throw new Error('Not found')
 
     if (patch.stage !== undefined && patch.stage !== app.stage) {
       await ctx.db.insert('stageHistory', {
@@ -83,7 +83,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const userId = await requireUser(ctx)
     const app = await ctx.db.get(id)
-    if (!app || (app.userId && app.userId !== userId)) throw new Error('Not found')
+    if (!app || app.userId !== userId) throw new Error('Not found')
     await ctx.db.delete(id)
   },
 })

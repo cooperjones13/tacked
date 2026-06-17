@@ -67,9 +67,10 @@ function CardVisual({ application, isOverlay = false }: CardVisualProps) {
 
 interface ApplicationCardProps {
   application: Application
+  onClick?: () => void
 }
 
-export function ApplicationCard({ application }: ApplicationCardProps) {
+export function ApplicationCard({ application, onClick }: ApplicationCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: application.id,
     data: { stage: application.stage },
@@ -85,6 +86,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
     <div
       ref={setNodeRef}
       style={style}
+      onClick={onClick}
       className="w-[260px] cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       {...listeners}
       {...attributes}

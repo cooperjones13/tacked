@@ -2,10 +2,23 @@ import { useState } from 'react'
 import { useBoard } from './hooks/useBoard'
 import { Board } from './components/Board'
 import { AddApplicationDrawer } from './components/AddApplicationDrawer'
+import { ApplicationDetail } from './components/ApplicationDetail'
 
 function App() {
   const { applications, moveApplication, addApplication } = useBoard()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const selectedApp = selectedId ? (applications.find(a => a.id === selectedId) ?? null) : null
+
+  if (selectedApp) {
+    return (
+      <ApplicationDetail
+        application={selectedApp}
+        onBack={() => setSelectedId(null)}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
@@ -19,7 +32,11 @@ function App() {
         </button>
       </header>
       <main className="flex-1 p-6">
-        <Board applications={applications} onMove={moveApplication} />
+        <Board
+          applications={applications}
+          onMove={moveApplication}
+          onSelect={setSelectedId}
+        />
       </main>
       <AddApplicationDrawer
         open={drawerOpen}

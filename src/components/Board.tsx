@@ -16,9 +16,10 @@ import { ApplicationCardOverlay } from './ApplicationCard'
 interface Props {
   applications: Application[]
   onMove: (id: string, stage: Stage) => void
+  onSelect: (id: string) => void
 }
 
-export function Board({ applications, onMove }: Props) {
+export function Board({ applications, onMove, onSelect }: Props) {
   const [activeApp, setActiveApp] = useState<Application | null>(null)
 
   const sensors = useSensors(
@@ -56,6 +57,7 @@ export function Board({ applications, onMove }: Props) {
             key={stage.id}
             stage={stage}
             applications={applications.filter(a => a.stage === stage.id)}
+            onSelect={onSelect}
           />
         ))}
       </div>

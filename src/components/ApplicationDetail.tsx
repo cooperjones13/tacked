@@ -174,19 +174,8 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
 
-          {/* Positioning summary — full width */}
-          {analysis?.summary && (
-            <div className="bg-card border border-border rounded-card px-5 py-4">
-              <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest block mb-1.5">
-                Positioning
-              </span>
-              <p className="text-[14px] text-ink leading-relaxed">{analysis.summary}</p>
-            </div>
-          )}
-
-          {/* Row 1: Overview | AI Positioning — same height */}
-          <div className="grid grid-cols-[1fr_340px] gap-5 items-stretch">
-            <section className="bg-card border border-border rounded-card p-5">
+          {/* Row 1: Overview — full width */}
+          <section className="bg-card border border-border rounded-card p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
                     Overview
@@ -315,13 +304,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                     )}
                   </div>
                 )}
-              </section>
-
-            <PositioningPanel
-              applicationId={application.id}
-              jdText={localJdText}
-            />
-          </div>
+          </section>
 
           {/* Row 2: Notes | Job Description — side by side, same height */}
           <div className="grid grid-cols-2 gap-5 items-stretch">
@@ -352,6 +335,26 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                 placeholder="Paste the job description here to enable AI analysis…"
                 className={`${inputCls} resize-none flex-1 min-h-[120px]`}
               />
+            </section>
+          </div>
+
+          {/* Row 3: AI Positioning (left) | Positioning Summary (right) */}
+          <div className="grid grid-cols-[340px_1fr] gap-5 items-stretch">
+            <PositioningPanel
+              applicationId={application.id}
+              jdText={localJdText}
+            />
+            <section className="bg-card border border-border rounded-card p-5 flex flex-col">
+              <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                Positioning summary
+              </h3>
+              {analysis?.summary ? (
+                <p className="text-[14px] text-ink leading-relaxed">{analysis.summary}</p>
+              ) : (
+                <p className="text-[13px] text-ink-muted/60">
+                  Run analysis to see your positioning summary.
+                </p>
+              )}
             </section>
           </div>
 

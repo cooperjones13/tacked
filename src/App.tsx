@@ -71,34 +71,32 @@ function BoardApp() {
           <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
           <span className="text-[12px] text-ink-muted">job search tracker</span>
         </div>
-        <UserButton />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setResumeDrawerOpen(true)}
+            className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            Resumes
+          </button>
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            + Add application
+          </button>
+          <UserButton />
+        </div>
       </header>
 
       <main className="flex-1 p-6">
-        <div className="flex items-center gap-3 mb-6">
-          {applications.length > 0 && (
-            <FilterBar
-              filters={filters}
-              onChange={setFilters}
-              visibleCount={visibleApplications.length}
-              totalCount={applications.length}
-            />
-          )}
-          <div className="ml-auto flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setResumeDrawerOpen(true)}
-              className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-            >
-              Resumes
-            </button>
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-            >
-              + Add application
-            </button>
-          </div>
-        </div>
+        {applications.length > 0 && (
+          <FilterBar
+            filters={filters}
+            onChange={setFilters}
+            visibleCount={visibleApplications.length}
+            totalCount={applications.length}
+          />
+        )}
 
         {applications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">

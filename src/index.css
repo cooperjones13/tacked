@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  /* --- Surfaces --- */
+  --color-canvas: #f5f4f2;
+  --color-column: #eceae7;
+  --color-card: #ffffff;
+
+  /* --- Text --- */
+  --color-ink: #1c1917;
+  --color-ink-muted: #78716c;
+
+  /* --- Interactive --- */
+  --color-accent: #6366f1;
+  --color-accent-hover: #4f46e5;
+
+  /* --- Structural --- */
+  --color-border: #d6d3cf;
+
+  /* --- Stage colors --- */
+  --color-stage-wishlist: #8b5cf6;
+  --color-stage-applied: #3b82f6;
+  --color-stage-phone: #06b6d4;
+  --color-stage-interview: #f59e0b;
+  --color-stage-offer: #10b981;
+  --color-stage-rejected: #ef4444;
+
+  /* --- Typography --- */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* --- Radii --- */
+  --radius-card: 8px;
+  --radius-button: 6px;
+
+  /* --- Shadows --- */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-card-drag: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

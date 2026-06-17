@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
+import { CoverLetterDialog } from './CoverLetterDialog'
 
 interface Props {
   applicationId: string
@@ -19,14 +20,35 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
   const resumes = useQuery(api.resumes.list)
   const analysis = useQuery(api.analyses.getByApplication, { applicationId: appId })
   const runAnalysis = useAction(api.ai.analyzeApplication)
+  const runCoverLetter = useAction(api.ai.generateCoverLetter)
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>('')
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [coverLetter, setCoverLetter] = useState<string | null>(null)
+  const [generatingLetter, setGeneratingLetter] = useState(false)
+  const [letterError, setLetterError] = useState<string | null>(null)
 
   const resumeList = resumes ?? []
   const activeResumeId = selectedResumeId || resumeList[0]?._id || ''
   const hasJd = jdText.trim().length > 0
+
+  async function handleGenerateLetter() {
+    if (!activeResumeId) return
+    setGeneratingLetter(true)
+    setLetterError(null)
+    try {
+      const letter = await runCoverLetter({
+        applicationId: appId,
+        resumeId: activeResumeId as Id<'resumes'>,
+      })
+      setCoverLetter(letter)
+    } catch (e) {
+      setLetterError(e instanceof Error ? e.message : 'Generation failed — please try again.')
+    } finally {
+      setGeneratingLetter(false)
+    }
+  }
 
   async function handleAnalyze() {
     if (!activeResumeId || !hasJd) return
@@ -99,6 +121,19 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
           </button>
 
           {error && <p className="text-[12px] text-stage-rejected">{error}</p>}
+
+          {/* Cover letter */}
+          <div className="border-t border-border pt-3 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={handleGenerateLetter}
+              disabled={!hasJd || generatingLetter}
+              className="w-full px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {generatingLetter ? 'Generating…' : 'Generate cover letter'}
+            </button>
+            {letterError && <p className="text-[12px] text-stage-rejected">{letterError}</p>}
+          </div>
         </div>
       )}
 
@@ -130,6 +165,15 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
             </div>
           ) : null}
         </div>
+      )}
+
+      {coverLetter && (
+        <CoverLetterDialog
+          letter={coverLetter}
+          regenerating={generatingLetter}
+          onRegenerate={handleGenerateLetter}
+          onClose={() => setCoverLetter(null)}
+        />
       )}
     </div>
   )

@@ -125,3 +125,79 @@ ${application.jdText}`,
     })
   },
 })
+
+export const generateCoverLetter = action({
+  args: {
+    applicationId: v.id('applications'),
+    resumeId: v.id('resumes'),
+  },
+  handler: async (ctx, { applicationId, resumeId }): Promise<string> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthenticated')
+
+    const [application, resume] = await Promise.all([
+      ctx.runQuery(internal.applications.get, { id: applicationId }),
+      ctx.runQuery(internal.resumes.get, { id: resumeId }),
+    ])
+
+    if (!application) throw new Error('Application not found')
+    if (!resume) throw new Error('Resume not found')
+    if (!application.jdText.trim()) throw new Error('Add a job description before generating a cover letter')
+
+    const pdfUrl = await ctx.storage.getUrl(resume.storageId)
+    if (!pdfUrl) throw new Error('Resume file not found')
+
+    const pdfBase64 = Buffer.from(
+      await (await fetch(pdfUrl)).arrayBuffer()
+    ).toString('base64')
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 },
+            },
+            {
+              type: 'text',
+              text: `Write a cover letter for this candidate applying to the role below.
+
+Role: ${application.role}
+Company: ${application.company}
+
+Job Description:
+${application.jdText}
+
+---
+
+Rules — breaking any of these makes the letter unusable:
+
+1. Zero em dashes (—). Restructure the sentence instead.
+2. Never use "not only X but also Y" or "not X, but Y" constructions.
+3. Never open a sentence or paragraph with: "Furthermore", "Moreover", "Additionally", "In addition", "However".
+4. No clichés: "excited to apply", "passionate about", "strong background", "proven track record", "extensive experience", "great fit", "highly motivated", "results-driven", "I am confident that".
+5. No generic closings like "Thank you for your consideration" or "I look forward to hearing from you".
+6. No bullet points anywhere.
+7. Vary sentence length deliberately — mix short punchy sentences with longer ones. Avoid three long sentences in a row.
+8. Never start two consecutive sentences with "I".
+9. Be specific — name actual projects, technologies, or experiences from the resume. Generic praise adds nothing.
+10. Write with confidence. No hedging: no "I believe", "I feel", "I think", "I hope".
+11. Three paragraphs only: (1) a specific opening hook that names something concrete, (2) one or two examples of directly relevant work, (3) a brief, direct close — one or two sentences.
+12. Under 350 words total.`,
+            },
+          ],
+        },
+      ],
+    })
+
+    const textBlock = response.content.find(b => b.type === 'text')
+    if (!textBlock || textBlock.type !== 'text') throw new Error('No cover letter returned')
+    return textBlock.text
+  },
+})

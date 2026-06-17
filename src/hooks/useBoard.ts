@@ -36,7 +36,17 @@ function toApp(doc: {
 export function useBoard() {
   const raw = useQuery(api.applications.list)
   const createMutation = useMutation(api.applications.create)
-  const updateMutation = useMutation(api.applications.update)
+  const updateMutation = useMutation(api.applications.update).withOptimisticUpdate(
+    (localStore, { id, ...patch }) => {
+      const current = localStore.getQuery(api.applications.list, {})
+      if (current === undefined) return
+      localStore.setQuery(
+        api.applications.list,
+        {},
+        current.map(app => app._id === id ? { ...app, ...patch } : app)
+      )
+    }
+  )
   const removeMutation = useMutation(api.applications.remove).withOptimisticUpdate(
     (localStore, { id }) => {
       const current = localStore.getQuery(api.applications.list, {})

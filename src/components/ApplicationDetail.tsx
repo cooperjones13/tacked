@@ -30,12 +30,13 @@ function EditField({ label, children }: { label: string; children: ReactNode }) 
   )
 }
 
-type DraftData = Omit<Application, 'id' | 'createdAt'>
+// Only the fields the overview section owns — notes/jdText are handled separately
+type OverviewDraft = Omit<Application, 'id' | 'createdAt' | 'notes' | 'jdText'>
 
 interface Props {
   application: Application
   onClose: () => void
-  onUpdate: (id: string, patch: Partial<DraftData>) => void
+  onUpdate: (id: string, patch: Partial<Omit<Application, 'id' | 'createdAt'>>) => void
 }
 
 export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
@@ -43,21 +44,24 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
-  const [isEditing, setIsEditing] = useState(false)
-  const isEditingRef = useRef(false)
-  isEditingRef.current = isEditing
+  // Overview edit state
+  const [overviewEditing, setOverviewEditing] = useState(false)
+  const overviewEditingRef = useRef(false)
+  overviewEditingRef.current = overviewEditing
 
-  const [draft, setDraft] = useState<DraftData>({
+  const [draft, setDraft] = useState<OverviewDraft>({
     company: application.company,
     role: application.role,
     stage: application.stage,
     location: application.location,
     salary: application.salary,
     jobUrl: application.jobUrl,
-    jdText: application.jdText,
     appliedDate: application.appliedDate,
-    notes: application.notes,
   })
+
+  // Notes and JD are always editable — changes written through immediately
+  const [localNotes, setLocalNotes] = useState(application.notes)
+  const [localJdText, setLocalJdText] = useState(application.jdText)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -65,8 +69,8 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
     dialog.showModal()
     function handleCancel(e: Event) {
       e.preventDefault()
-      if (isEditingRef.current) {
-        setIsEditing(false)
+      if (overviewEditingRef.current) {
+        setOverviewEditing(false)
       } else {
         onCloseRef.current()
       }
@@ -83,7 +87,7 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
     if (outside) onClose()
   }
 
-  function startEditing() {
+  function startOverviewEdit() {
     setDraft({
       company: application.company,
       role: application.role,
@@ -91,23 +95,22 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
       location: application.location,
       salary: application.salary,
       jobUrl: application.jobUrl,
-      jdText: application.jdText,
       appliedDate: application.appliedDate,
-      notes: application.notes,
     })
-    setIsEditing(true)
+    setOverviewEditing(true)
   }
 
-  function saveEditing() {
+  function saveOverview() {
     onUpdate(application.id, draft)
-    setIsEditing(false)
+    setOverviewEditing(false)
   }
 
-  function setField<K extends keyof DraftData>(key: K, value: DraftData[K]) {
+  function setDraftField<K extends keyof OverviewDraft>(key: K, value: OverviewDraft[K]) {
     setDraft(d => ({ ...d, [key]: value }))
   }
 
-  const activeStage = STAGES.find(s => s.id === (isEditing ? draft.stage : application.stage)) ?? STAGES[0]
+  const activeStage =
+    STAGES.find(s => s.id === (overviewEditing ? draft.stage : application.stage)) ?? STAGES[0]
 
   const formattedDate = application.appliedDate
     ? new Date(application.appliedDate).toLocaleDateString('en-US', {
@@ -126,19 +129,15 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
     >
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
 
-        {/* Header */}
+        {/* Header — no edit controls here */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <h2
-              id="detail-title"
-              className="text-[17px] font-semibold text-ink truncate"
-            >
+            <h2 id="detail-title" className="text-[17px] font-semibold text-ink truncate">
               {application.company}
             </h2>
             <span className="text-ink-muted shrink-0">·</span>
             <span className="text-[15px] text-ink-muted truncate">{application.role}</span>
           </div>
-
           <span
             className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium"
             style={{
@@ -153,34 +152,6 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
             />
             {activeStage.label}
           </span>
-
-          {isEditing ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="shrink-0 px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={saveEditing}
-                className="shrink-0 px-3 py-1.5 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-              >
-                Save
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={startEditing}
-              className="shrink-0 px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-            >
-              Edit
-            </button>
-          )}
-
           <button
             type="button"
             onClick={onClose}
@@ -195,22 +166,49 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-[1fr_340px] gap-5 items-start">
 
-            {/* Left column */}
             <div className="flex flex-col gap-4">
 
-              {/* Overview */}
+              {/* Overview — has its own edit controls */}
               <section className="bg-card border border-border rounded-card p-5">
-                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-5">
-                  Overview
-                </h3>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
+                    Overview
+                  </h3>
+                  {overviewEditing ? (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setOverviewEditing(false)}
+                        className="px-3 py-1 rounded-button border border-border text-[12px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={saveOverview}
+                        className="px-3 py-1 rounded-button bg-accent text-white text-[12px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={startOverviewEdit}
+                      className="px-3 py-1 rounded-button border border-border text-[12px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
 
-                {isEditing ? (
+                {overviewEditing ? (
                   <div className="grid grid-cols-2 gap-x-5 gap-y-4">
                     <EditField label="Company">
                       <input
                         type="text"
                         value={draft.company}
-                        onChange={e => setField('company', e.target.value)}
+                        onChange={e => setDraftField('company', e.target.value)}
                         required
                         className={inputCls}
                       />
@@ -219,7 +217,7 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                       <input
                         type="text"
                         value={draft.role}
-                        onChange={e => setField('role', e.target.value)}
+                        onChange={e => setDraftField('role', e.target.value)}
                         required
                         className={inputCls}
                       />
@@ -227,7 +225,7 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                     <EditField label="Stage">
                       <select
                         value={draft.stage}
-                        onChange={e => setField('stage', e.target.value as Stage)}
+                        onChange={e => setDraftField('stage', e.target.value as Stage)}
                         className={inputCls}
                       >
                         {STAGES.map(s => (
@@ -239,7 +237,7 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                       <input
                         type="text"
                         value={draft.location}
-                        onChange={e => setField('location', e.target.value)}
+                        onChange={e => setDraftField('location', e.target.value)}
                         placeholder="Remote"
                         className={inputCls}
                       />
@@ -248,7 +246,7 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                       <input
                         type="text"
                         value={draft.salary}
-                        onChange={e => setField('salary', e.target.value)}
+                        onChange={e => setDraftField('salary', e.target.value)}
                         placeholder="$120k–$150k"
                         className={inputCls}
                       />
@@ -257,21 +255,21 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                       <input
                         type="date"
                         value={draft.appliedDate ?? ''}
-                        onChange={e => setField('appliedDate', e.target.value || null)}
+                        onChange={e => setDraftField('appliedDate', e.target.value || null)}
                         className={inputCls}
                       />
                     </EditField>
-                    <EditField label="Job URL">
-                      <div className="col-span-2">
+                    <div className="col-span-2">
+                      <EditField label="Job URL">
                         <input
                           type="url"
                           value={draft.jobUrl}
-                          onChange={e => setField('jobUrl', e.target.value)}
+                          onChange={e => setDraftField('jobUrl', e.target.value)}
                           placeholder="https://..."
                           className={inputCls}
                         />
-                      </div>
-                    </EditField>
+                      </EditField>
+                    </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-8 gap-y-5">
@@ -302,54 +300,41 @@ export function ApplicationDetail({ application, onClose, onUpdate }: Props) {
                 )}
               </section>
 
-              {/* Notes */}
+              {/* Notes — always editable, saves on every change */}
               <section className="bg-card border border-border rounded-card p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
                   Notes
                 </h3>
-                {isEditing ? (
-                  <textarea
-                    value={draft.notes}
-                    onChange={e => setField('notes', e.target.value)}
-                    placeholder="Referral, recruiter contact, anything relevant…"
-                    rows={4}
-                    className={`${inputCls} resize-none`}
-                  />
-                ) : application.notes ? (
-                  <p className="text-[14px] text-ink leading-relaxed whitespace-pre-wrap">
-                    {application.notes}
-                  </p>
-                ) : (
-                  <p className="text-[13px] text-ink-muted/60">No notes added.</p>
-                )}
+                <textarea
+                  value={localNotes}
+                  onChange={e => {
+                    setLocalNotes(e.target.value)
+                    onUpdate(application.id, { notes: e.target.value })
+                  }}
+                  placeholder="Referral, recruiter contact, anything relevant…"
+                  rows={4}
+                  className={`${inputCls} resize-none`}
+                />
               </section>
 
-              {/* Job description */}
+              {/* Job description — always editable, saves on every change */}
               <section className="bg-card border border-border rounded-card p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
                   Job description
                 </h3>
-                {isEditing ? (
-                  <textarea
-                    value={draft.jdText}
-                    onChange={e => setField('jdText', e.target.value)}
-                    placeholder="Paste the job description here to enable AI analysis…"
-                    rows={8}
-                    className={`${inputCls} resize-none`}
-                  />
-                ) : application.jdText ? (
-                  <p className="text-[14px] text-ink leading-relaxed whitespace-pre-wrap">
-                    {application.jdText}
-                  </p>
-                ) : (
-                  <p className="text-[13px] text-ink-muted/60">
-                    No job description added — paste the JD here to enable AI analysis.
-                  </p>
-                )}
+                <textarea
+                  value={localJdText}
+                  onChange={e => {
+                    setLocalJdText(e.target.value)
+                    onUpdate(application.id, { jdText: e.target.value })
+                  }}
+                  placeholder="Paste the job description here to enable AI analysis…"
+                  rows={8}
+                  className={`${inputCls} resize-none`}
+                />
               </section>
             </div>
 
-            {/* Right column */}
             <PositioningPanel />
           </div>
         </div>

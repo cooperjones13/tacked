@@ -390,7 +390,68 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
               jdText={localJdText}
             />
           </div>
+
+          {/* Analysis details — full width below the grid */}
+          {analysis && (
+            <div className="mt-5 grid grid-cols-2 gap-5">
+              <section className="bg-card border border-border rounded-card p-5">
+                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                  Strengths
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {analysis.strengths.map((s, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[13px] text-ink">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-stage-offer)' }} />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="bg-card border border-border rounded-card p-5">
+                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                  Gaps
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {analysis.gaps.map((g, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[13px] text-ink">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-stage-interview)' }} />
+                      {g}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="bg-card border border-border rounded-card p-5">
+                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                  Keywords
+                </h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {analysis.keywords.map((k, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-accent/10 text-accent">
+                      {k}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              <section className="bg-card border border-border rounded-card p-5">
+                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                  Talking points
+                </h3>
+                <ul className="flex flex-col gap-2.5">
+                  {analysis.talkingPoints.map((tp, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[13px] text-ink leading-snug">
+                      <span className="shrink-0 text-[11px] font-semibold text-ink-muted mt-0.5">{i + 1}.</span>
+                      {tp}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          )}
         </div>
+      </div>
       </div>
     </dialog>
   )

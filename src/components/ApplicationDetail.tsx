@@ -368,7 +368,10 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
               </div>
             </div>
 
-            <PositioningPanel />
+            <PositioningPanel
+              applicationId={application.id}
+              jdText={localJdText}
+            />
           </div>
         </div>
       </div>

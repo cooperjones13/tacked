@@ -1,4 +1,4 @@
-import { mutation, query } from './_generated/server'
+import { internalQuery, mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 
 const stageV = v.union(
@@ -8,6 +8,11 @@ const stageV = v.union(
   v.literal('offer'),
   v.literal('rejected'),
 )
+
+export const get = internalQuery({
+  args: { id: v.id('applications') },
+  handler: async (ctx, { id }) => ctx.db.get(id),
+})
 
 export const list = query({
   handler: async (ctx) => {

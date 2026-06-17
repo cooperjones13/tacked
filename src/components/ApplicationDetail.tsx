@@ -72,6 +72,10 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
     applicationId: application.id as Id<'applications'>,
   })
 
+  const history = useQuery(api.stageHistory.getByApplication, {
+    applicationId: application.id as Id<'applications'>,
+  })
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -358,37 +362,6 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             </section>
           </div>
 
-          {/* Delete */}
-          <div className="flex justify-start">
-            {confirmingDelete ? (
-              <div className="flex items-center gap-3">
-                <span className="text-[13px] text-ink-muted">Delete this application?</span>
-                <button
-                  type="button"
-                  onClick={() => setConfirmingDelete(false)}
-                  className="px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { onDelete(application.id); onClose() }}
-                  className="px-3 py-1.5 rounded-button bg-stage-rejected text-white text-[13px] font-medium hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-stage-rejected focus-visible:ring-offset-1"
-                >
-                  Yes, delete
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmingDelete(true)}
-                className="text-[13px] text-ink-muted/60 hover:text-stage-rejected transition-colors focus-visible:ring-2 focus-visible:ring-stage-rejected rounded"
-              >
-                Delete application
-              </button>
-            )}
-          </div>
-
           {/* Analysis details — full width */}
           {analysis && (
             <div className="grid grid-cols-2 gap-5">
@@ -448,6 +421,65 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
               </section>
             </div>
           )}
+
+          {/* Stage history */}
+          {history && history.length > 0 && (
+            <section className="bg-card border border-border rounded-card p-5">
+              <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                History
+              </h3>
+              <ul className="flex flex-col gap-2">
+                {history.map(entry => {
+                  const from = STAGES.find(s => s.id === entry.fromStage)
+                  const to = STAGES.find(s => s.id === entry.toStage)
+                  const date = new Date(entry.movedAt).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric',
+                  })
+                  return (
+                    <li key={entry._id} className="flex items-center justify-between text-[13px]">
+                      <span className="flex items-center gap-1.5">
+                        <span className="font-medium" style={{ color: from?.color }}>{from?.label}</span>
+                        <span className="text-ink-muted">→</span>
+                        <span className="font-medium" style={{ color: to?.color }}>{to?.label}</span>
+                      </span>
+                      <span className="text-[12px] text-ink-muted">{date}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+
+          {/* Delete — bottom of modal */}
+          <div className="flex justify-start pt-2 pb-1">
+            {confirmingDelete ? (
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] text-ink-muted">Delete this application?</span>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  className="px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { onDelete(application.id); onClose() }}
+                  className="px-3 py-1.5 rounded-button bg-stage-rejected text-white text-[13px] font-medium hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-stage-rejected focus-visible:ring-offset-1"
+                >
+                  Yes, delete
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(true)}
+                className="px-3 py-1.5 rounded-button border border-stage-rejected text-stage-rejected text-[13px] font-medium hover:bg-stage-rejected hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-stage-rejected focus-visible:ring-offset-1"
+              >
+                Delete application
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </dialog>

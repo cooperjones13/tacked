@@ -51,6 +51,17 @@ export const update = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, { id, ...patch }) => {
+    if (patch.stage !== undefined) {
+      const current = await ctx.db.get(id)
+      if (current && current.stage !== patch.stage) {
+        await ctx.db.insert('stageHistory', {
+          applicationId: id,
+          fromStage: current.stage,
+          toStage: patch.stage,
+          movedAt: Date.now(),
+        })
+      }
+    }
     await ctx.db.patch(id, patch)
   },
 })

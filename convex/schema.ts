@@ -40,4 +40,11 @@ export default defineSchema({
     talkingPoints: v.array(v.string()),
     model: v.string(),
   }).index('by_application', ['applicationId']),
+
+  stageHistory: defineTable({
+    applicationId: v.id('applications'),
+    fromStage: stage,
+    toStage: stage,
+    movedAt: v.number(),
+  }).index('by_application', ['applicationId']),
 })

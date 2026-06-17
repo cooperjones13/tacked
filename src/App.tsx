@@ -10,6 +10,19 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [resumeDrawerOpen, setResumeDrawerOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const visibleApplications = searchQuery.trim()
+    ? applications.filter(app => {
+        const q = searchQuery.toLowerCase()
+        return (
+          app.company.toLowerCase().includes(q) ||
+          app.role.toLowerCase().includes(q) ||
+          app.location.toLowerCase().includes(q) ||
+          app.notes.toLowerCase().includes(q)
+        )
+      })
+    : applications
 
   const selectedApp = selectedId
     ? (applications.find(a => a.id === selectedId) ?? null)
@@ -20,6 +33,13 @@ function App() {
       <header className="sticky top-0 z-10 bg-canvas border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
         <span className="text-[17px] font-semibold text-ink tracking-tight">Onward</span>
         <div className="flex items-center gap-2">
+          <input
+            type="search"
+            placeholder="Search applications…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-52 px-3 py-2 rounded-button border border-border bg-canvas text-[13px] text-ink placeholder:text-ink-muted/50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
+          />
           <button
             onClick={() => setResumeDrawerOpen(true)}
             className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
@@ -36,7 +56,7 @@ function App() {
       </header>
       <main className="flex-1 p-6">
         <Board
-          applications={applications}
+          applications={visibleApplications}
           onMove={moveApplication}
           onSelect={setSelectedId}
         />

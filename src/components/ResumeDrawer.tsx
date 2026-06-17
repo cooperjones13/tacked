@@ -54,6 +54,7 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
+      aria-modal="true"
       aria-label={`Preview: ${label}`}
       className="w-full max-w-3xl h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
     >
@@ -197,6 +198,7 @@ function ResumeModal({ onClose }: { onClose: () => void }) {
       <dialog
         ref={dialogRef}
         onClick={handleBackdropClick}
+        aria-modal="true"
         aria-labelledby="resumes-title"
         className="w-full max-w-lg max-h-[80vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
       >
@@ -234,7 +236,7 @@ function ResumeModal({ onClose }: { onClose: () => void }) {
                 {uploading ? 'Uploading…' : '+ Upload PDF'}
               </button>
               {uploadError && (
-                <p className="mt-2 text-[12px] text-stage-rejected">{uploadError}</p>
+                <p role="alert" className="mt-2 text-[12px] text-stage-rejected">{uploadError}</p>
               )}
             </div>
 

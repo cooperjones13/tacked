@@ -115,7 +115,7 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
             {analyzing ? 'Analyzing…' : analysis ? 'Re-analyze' : 'Analyze'}
           </button>
 
-          {error && <p className="text-[12px] text-stage-rejected">{error}</p>}
+          {error && <p role="alert" className="text-[12px] text-stage-rejected">{error}</p>}
 
           {/* Cover letter */}
           <div className="border-t border-border pt-3 flex flex-col gap-2">
@@ -127,7 +127,7 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
             >
               {generatingLetter ? 'Generating…' : 'Generate cover letter'}
             </button>
-            {letterError && <p className="text-[12px] text-stage-rejected">{letterError}</p>}
+            {letterError && <p role="alert" className="text-[12px] text-stage-rejected">{letterError}</p>}
           </div>
         </div>
       )}

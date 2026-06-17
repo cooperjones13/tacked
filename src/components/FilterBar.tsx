@@ -35,6 +35,7 @@ export function FilterBar({ filters, onChange, visibleCount, totalCount }: Props
     <div className="flex items-center gap-2 flex-wrap">
       <input
         type="search"
+        aria-label="Search applications by company, role, or location"
         placeholder="Search by company, role, location…"
         value={filters.query}
         onChange={e => set('query', e.target.value)}

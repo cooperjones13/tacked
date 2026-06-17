@@ -43,6 +43,7 @@ export function CoverLetterDialog({ letter, regenerating, onRegenerate, onClose 
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
+      aria-modal="true"
       aria-labelledby="cl-title"
       className="w-full max-w-2xl h-[80vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
     >

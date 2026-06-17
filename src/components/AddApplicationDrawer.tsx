@@ -98,6 +98,7 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
+      aria-modal="true"
       aria-labelledby="add-app-title"
       className="w-full max-w-lg max-h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
     >

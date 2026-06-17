@@ -27,8 +27,16 @@ function CircularScore({ score }: { score: number }) {
 
   return (
     <div className="flex flex-col items-center gap-1.5 shrink-0">
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <div
+        className="relative"
+        style={{ width: size, height: size }}
+        role="meter"
+        aria-valuenow={score}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Fit score: ${score} out of 100`}
+      >
+        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
           <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-column)" strokeWidth={strokeWidth} />
           <circle
             cx={size / 2} cy={size / 2} r={radius} fill="none"
@@ -37,7 +45,7 @@ function CircularScore({ score }: { score: number }) {
             strokeLinecap="round"
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
           <span className="text-[15px] font-semibold leading-none" style={{ color }}>{score}</span>
           <span className="text-[9px] text-ink-muted/60 leading-none mt-0.5">/100</span>
         </div>
@@ -175,6 +183,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
+      aria-modal="true"
       aria-labelledby="detail-title"
       className="w-full max-w-4xl max-h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
     >
@@ -480,10 +489,12 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   })
                   return (
                     <li key={entry._id} className="flex items-center justify-between text-[13px]">
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-medium" style={{ color: from?.color }}>{from?.label}</span>
-                        <span className="text-ink-muted">→</span>
-                        <span className="font-medium" style={{ color: to?.color }}>{to?.label}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: from?.color }} aria-hidden="true" />
+                        <span className="text-ink">{from?.label}</span>
+                        <span className="text-ink-muted" aria-hidden="true">→</span>
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: to?.color }} aria-hidden="true" />
+                        <span className="text-ink">{to?.label}</span>
                       </span>
                       <span className="text-[12px] text-ink-muted">{date}</span>
                     </li>

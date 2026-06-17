@@ -56,7 +56,7 @@ export const analyzeApplication = action({
               },
               summary: {
                 type: 'string',
-                description: '2–3 sentence positioning summary: how the candidate should angle themselves for this role',
+                description: 'One concise sentence on how the candidate should angle themselves for this role',
               },
               strengths: {
                 type: 'array',

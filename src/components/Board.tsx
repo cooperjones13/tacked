@@ -49,8 +49,7 @@ export function Board({ applications, onMove }: Props) {
       <div
         role="region"
         aria-label="Job application board"
-        className="flex gap-4 overflow-x-auto pb-6"
-        style={{ scrollbarWidth: 'thin' }}
+        className="grid grid-cols-5 gap-4 flex-1 min-h-0"
       >
         {STAGES.map(stage => (
           <Column

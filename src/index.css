@@ -18,9 +18,8 @@
   --color-border: #d6d3cf;
 
   /* --- Stage colors --- */
-  --color-stage-wishlist: #8b5cf6;
+  --color-stage-interested: #8b5cf6;
   --color-stage-applied: #3b82f6;
-  --color-stage-phone: #06b6d4;
   --color-stage-interview: #f59e0b;
   --color-stage-offer: #10b981;
   --color-stage-rejected: #ef4444;

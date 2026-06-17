@@ -1,7 +1,6 @@
 export type Stage =
-  | 'wishlist'
+  | 'interested'
   | 'applied'
-  | 'phone-screen'
   | 'interview'
   | 'offer'
   | 'rejected'
@@ -27,10 +26,9 @@ export interface StageConfig {
 }
 
 export const STAGES: StageConfig[] = [
-  { id: 'wishlist',     label: 'Wishlist',      color: 'var(--color-stage-wishlist)' },
-  { id: 'applied',      label: 'Applied',        color: 'var(--color-stage-applied)' },
-  { id: 'phone-screen', label: 'Phone Screen',   color: 'var(--color-stage-phone)' },
-  { id: 'interview',    label: 'Interview',      color: 'var(--color-stage-interview)' },
-  { id: 'offer',        label: 'Offer',          color: 'var(--color-stage-offer)' },
-  { id: 'rejected',     label: 'Rejected',       color: 'var(--color-stage-rejected)' },
+  { id: 'interested', label: 'Interested', color: 'var(--color-stage-interested)' },
+  { id: 'applied',    label: 'Applied',    color: 'var(--color-stage-applied)' },
+  { id: 'interview',  label: 'Interview',  color: 'var(--color-stage-interview)' },
+  { id: 'offer',      label: 'Offer',      color: 'var(--color-stage-offer)' },
+  { id: 'rejected',   label: 'Rejected',   color: 'var(--color-stage-rejected)' },
 ]

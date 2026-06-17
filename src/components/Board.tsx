@@ -9,25 +9,19 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
 import { STAGES, type Application, type Stage } from '../types'
 import { Column } from './Column'
 import { ApplicationCardOverlay } from './ApplicationCard'
 
 interface Props {
   applications: Application[]
+  fitScores: Record<string, number>
   onMove: (id: string, stage: Stage) => void
   onSelect: (id: string) => void
 }
 
-export function Board({ applications, onMove, onSelect }: Props) {
+export function Board({ applications, fitScores, onMove, onSelect }: Props) {
   const [activeApp, setActiveApp] = useState<Application | null>(null)
-
-  const fitScoreData = useQuery(api.analyses.listFitScores)
-  const fitScores: Record<string, number> = Object.fromEntries(
-    (fitScoreData ?? []).map(f => [f.applicationId, f.fitScore])
-  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })

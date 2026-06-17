@@ -103,7 +103,7 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
     >
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <h2 id="add-app-title" className="text-[15px] font-semibold text-ink">
+          <h2 id="add-app-title" className="text-[18px] text-ink" style={{ fontFamily: 'var(--font-display)' }}>
             New application
           </h2>
           <button

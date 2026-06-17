@@ -21,7 +21,7 @@ export function Column({ stage, applications, fitScores, onSelect, onAdd }: Prop
           style={{ backgroundColor: stage.color }}
           aria-hidden="true"
         />
-        <h2 className="text-[13px] font-semibold text-ink-muted uppercase tracking-wider">
+        <h2 className="text-[15px] text-ink-muted" style={{ fontFamily: 'var(--font-display)' }}>
           {stage.label}
         </h2>
         <span className="ml-2 text-[12px] text-ink-muted tabular-nums">

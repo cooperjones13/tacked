@@ -183,7 +183,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
         {/* Header — no edit controls here */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <h2 id="detail-title" className="text-[17px] font-semibold text-ink truncate">
+            <h2 id="detail-title" className="text-[19px] text-ink truncate" style={{ fontFamily: 'var(--font-display)' }}>
               {application.company}
             </h2>
             <span className="text-ink-muted shrink-0">·</span>

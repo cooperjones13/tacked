@@ -49,7 +49,7 @@ export function CoverLetterDialog({ letter, regenerating, onRegenerate, onClose 
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <h2 id="cl-title" className="text-[15px] font-semibold text-ink">
+          <h2 id="cl-title" className="text-[18px] text-ink" style={{ fontFamily: 'var(--font-display)' }}>
             Cover letter
           </h2>
           <div className="flex items-center gap-2">

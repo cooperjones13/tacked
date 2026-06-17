@@ -59,7 +59,7 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
     >
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border shrink-0">
-          <h2 className="text-[15px] font-semibold text-ink truncate">{label}</h2>
+          <h2 className="text-[18px] text-ink truncate" style={{ fontFamily: 'var(--font-display)' }}>{label}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -202,7 +202,7 @@ function ResumeModal({ onClose }: { onClose: () => void }) {
       >
         <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-            <h2 id="resumes-title" className="text-[15px] font-semibold text-ink">
+            <h2 id="resumes-title" className="text-[18px] text-ink" style={{ fontFamily: 'var(--font-display)' }}>
               Resumes
             </h2>
             <button

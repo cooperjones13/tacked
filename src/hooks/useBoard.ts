@@ -1,37 +1,68 @@
-import { useState } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import type { Id } from '../../convex/_generated/dataModel'
 import type { Application, Stage } from '../types'
-import { mockApplications } from '../data/mock'
+
+type Patch = Partial<Omit<Application, 'id' | 'createdAt'>>
+
+function toApp(doc: {
+  _id: Id<'applications'>
+  _creationTime: number
+  company: string
+  role: string
+  location: string
+  salary: string
+  jobUrl: string
+  jdText: string
+  stage: Stage
+  appliedDate: string | null
+  notes: string
+}): Application {
+  return {
+    id: doc._id as string,
+    company: doc.company,
+    role: doc.role,
+    location: doc.location,
+    salary: doc.salary,
+    jobUrl: doc.jobUrl,
+    jdText: doc.jdText,
+    stage: doc.stage,
+    appliedDate: doc.appliedDate,
+    notes: doc.notes,
+    createdAt: new Date(doc._creationTime).toISOString(),
+  }
+}
 
 export function useBoard() {
-  const [applications, setApplications] = useState<Application[]>(mockApplications)
+  const raw = useQuery(api.applications.list)
+  const createMutation = useMutation(api.applications.create)
+  const updateMutation = useMutation(api.applications.update)
+  const removeMutation = useMutation(api.applications.remove)
 
-  const moveApplication = (id: string, stage: Stage) => {
-    setApplications(prev =>
-      prev.map(app => (app.id === id ? { ...app, stage } : app))
-    )
+  const applications: Application[] = (raw ?? []).map(toApp)
+
+  function addApplication(data: Omit<Application, 'id' | 'createdAt'>) {
+    return createMutation(data)
   }
 
-  const addApplication = (data: Omit<Application, 'id' | 'createdAt'>) => {
-    const app: Application = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    }
-    setApplications(prev => [app, ...prev])
+  function updateApplication(id: string, patch: Patch) {
+    return updateMutation({ id: id as Id<'applications'>, ...patch })
   }
 
-  const updateApplication = (
-    id: string,
-    patch: Partial<Omit<Application, 'id' | 'createdAt'>>
-  ) => {
-    setApplications(prev =>
-      prev.map(app => (app.id === id ? { ...app, ...patch } : app))
-    )
+  function moveApplication(id: string, stage: Stage) {
+    return updateMutation({ id: id as Id<'applications'>, stage })
   }
 
-  const deleteApplication = (id: string) => {
-    setApplications(prev => prev.filter(app => app.id !== id))
+  function deleteApplication(id: string) {
+    return removeMutation({ id: id as Id<'applications'> })
   }
 
-  return { applications, moveApplication, addApplication, updateApplication, deleteApplication }
+  return {
+    applications,
+    isLoading: raw === undefined,
+    addApplication,
+    updateApplication,
+    moveApplication,
+    deleteApplication,
+  }
 }

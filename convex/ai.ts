@@ -22,6 +22,10 @@ export const analyzeApplication = action({
     resumeId: v.id('resumes'),
   },
   handler: async (ctx, { applicationId, resumeId }): Promise<void> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthenticated')
+    const userId = identity.subject
+
     const [application, resume] = await Promise.all([
       ctx.runQuery(internal.applications.get, { id: applicationId }),
       ctx.runQuery(internal.resumes.get, { id: resumeId }),
@@ -113,6 +117,7 @@ ${application.jdText}`,
     const result = toolUse.input as AnalysisResult
 
     await ctx.runMutation(internal.analyses.create, {
+      userId,
       applicationId,
       resumeId,
       ...result,

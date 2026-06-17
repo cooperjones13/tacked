@@ -1,12 +1,20 @@
 import { internalMutation, query } from './_generated/server'
 import { v } from 'convex/values'
 
+async function requireUser(ctx: { auth: { getUserIdentity(): Promise<{ subject: string } | null> } }) {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) throw new Error('Unauthenticated')
+  return identity.subject
+}
+
 // Most recent fit score per application — used to decorate board cards
 export const listFitScores = query({
   handler: async (ctx) => {
+    const userId = await requireUser(ctx)
     const all = await ctx.db.query('analyses').order('desc').collect()
+    const userAll = all.filter(a => !a.userId || a.userId === userId)
     const seen = new Set<string>()
-    return all
+    return userAll
       .filter(a => {
         const key = a.applicationId as string
         if (seen.has(key)) return false
@@ -20,6 +28,7 @@ export const listFitScores = query({
 export const getByApplication = query({
   args: { applicationId: v.id('applications') },
   handler: async (ctx, { applicationId }) => {
+    await requireUser(ctx)
     return ctx.db
       .query('analyses')
       .withIndex('by_application', q => q.eq('applicationId', applicationId))
@@ -30,6 +39,7 @@ export const getByApplication = query({
 
 export const create = internalMutation({
   args: {
+    userId: v.string(),
     applicationId: v.id('applications'),
     resumeId: v.id('resumes'),
     fitScore: v.number(),

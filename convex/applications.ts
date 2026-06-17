@@ -9,6 +9,12 @@ const stageV = v.union(
   v.literal('rejected'),
 )
 
+async function requireUser(ctx: { auth: { getUserIdentity(): Promise<{ subject: string } | null> } }) {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) throw new Error('Unauthenticated')
+  return identity.subject
+}
+
 export const get = internalQuery({
   args: { id: v.id('applications') },
   handler: async (ctx, { id }) => ctx.db.get(id),
@@ -16,7 +22,9 @@ export const get = internalQuery({
 
 export const list = query({
   handler: async (ctx) => {
-    return ctx.db.query('applications').collect()
+    const userId = await requireUser(ctx)
+    const all = await ctx.db.query('applications').collect()
+    return all.filter(a => !a.userId || a.userId === userId)
   },
 })
 
@@ -33,7 +41,8 @@ export const create = mutation({
     notes: v.string(),
   },
   handler: async (ctx, args) => {
-    return ctx.db.insert('applications', args)
+    const userId = await requireUser(ctx)
+    return ctx.db.insert('applications', { ...args, userId })
   },
 })
 
@@ -51,17 +60,20 @@ export const update = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, { id, ...patch }) => {
-    if (patch.stage !== undefined) {
-      const current = await ctx.db.get(id)
-      if (current && current.stage !== patch.stage) {
-        await ctx.db.insert('stageHistory', {
-          applicationId: id,
-          fromStage: current.stage,
-          toStage: patch.stage,
-          movedAt: Date.now(),
-        })
-      }
+    const userId = await requireUser(ctx)
+    const app = await ctx.db.get(id)
+    if (!app || (app.userId && app.userId !== userId)) throw new Error('Not found')
+
+    if (patch.stage !== undefined && patch.stage !== app.stage) {
+      await ctx.db.insert('stageHistory', {
+        userId,
+        applicationId: id,
+        fromStage: app.stage,
+        toStage: patch.stage,
+        movedAt: Date.now(),
+      })
     }
+
     await ctx.db.patch(id, patch)
   },
 })
@@ -69,6 +81,9 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id('applications') },
   handler: async (ctx, { id }) => {
+    const userId = await requireUser(ctx)
+    const app = await ctx.db.get(id)
+    if (!app || (app.userId && app.userId !== userId)) throw new Error('Not found')
     await ctx.db.delete(id)
   },
 })

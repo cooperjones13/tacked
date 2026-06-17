@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from 'convex/react'
+import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { api } from '../convex/_generated/api'
 import { useBoard } from './hooks/useBoard'
 import { Board } from './components/Board'
@@ -46,7 +47,8 @@ function applyFilters(
   })
 }
 
-function App() {
+// Board and all data hooks — only rendered when authenticated
+function BoardApp() {
   const { applications, moveApplication, addApplication, updateApplication, deleteApplication } = useBoard()
   const fitScoreData = useQuery(api.analyses.listFitScores)
   const fitScores: Record<string, number> = Object.fromEntries(
@@ -59,10 +61,7 @@ function App() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
 
   const visibleApplications = applyFilters(applications, filters, fitScores)
-
-  const selectedApp = selectedId
-    ? (applications.find(a => a.id === selectedId) ?? null)
-    : null
+  const selectedApp = selectedId ? (applications.find(a => a.id === selectedId) ?? null) : null
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
@@ -81,6 +80,7 @@ function App() {
           >
             + Add application
           </button>
+          <UserButton />
         </div>
       </header>
 
@@ -118,6 +118,29 @@ function App() {
       )}
     </div>
   )
+}
+
+// Auth gate — shows sign-in screen until authenticated
+function App() {
+  const { isSignedIn, isLoaded } = useAuth()
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <p className="text-[13px] text-ink-muted">Loading…</p>
+      </div>
+    )
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <SignIn />
+      </div>
+    )
+  }
+
+  return <BoardApp />
 }
 
 export default App

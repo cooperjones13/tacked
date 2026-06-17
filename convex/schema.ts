@@ -11,6 +11,7 @@ const stage = v.union(
 
 export default defineSchema({
   applications: defineTable({
+    userId: v.optional(v.string()),
     company: v.string(),
     role: v.string(),
     location: v.string(),
@@ -20,16 +21,18 @@ export default defineSchema({
     stage,
     appliedDate: v.union(v.string(), v.null()),
     notes: v.string(),
-  }),
+  }).index('by_user', ['userId']),
 
   resumes: defineTable({
+    userId: v.optional(v.string()),
     storageId: v.id('_storage'),
     filename: v.string(),
     label: v.string(),
     createdAt: v.number(),
-  }),
+  }).index('by_user', ['userId']),
 
   analyses: defineTable({
+    userId: v.optional(v.string()),
     applicationId: v.id('applications'),
     resumeId: v.id('resumes'),
     fitScore: v.number(),
@@ -42,6 +45,7 @@ export default defineSchema({
   }).index('by_application', ['applicationId']),
 
   stageHistory: defineTable({
+    userId: v.optional(v.string()),
     applicationId: v.id('applications'),
     fromStage: stage,
     toStage: stage,

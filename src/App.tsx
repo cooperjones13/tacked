@@ -5,7 +5,7 @@ import { AddApplicationDrawer } from './components/AddApplicationDrawer'
 import { ApplicationDetail } from './components/ApplicationDetail'
 
 function App() {
-  const { applications, moveApplication, addApplication } = useBoard()
+  const { applications, moveApplication, addApplication, updateApplication } = useBoard()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -40,6 +40,7 @@ function App() {
         <ApplicationDetail
           application={selectedApp}
           onClose={() => setSelectedId(null)}
+          onUpdate={updateApplication}
         />
       )}
     </div>

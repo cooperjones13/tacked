@@ -15,7 +15,7 @@ export function Column({ stage, applications, fitScores, onSelect, onAdd }: Prop
 
   return (
     <div className="py-4">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 pr-2">
         <span
           className="w-2 h-2 rounded-full shrink-0"
           style={{ backgroundColor: stage.color }}

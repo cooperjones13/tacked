@@ -172,10 +172,11 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* Positioning summary — full width so it has room to breathe */}
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
+
+          {/* Positioning summary — full width */}
           {analysis?.summary && (
-            <div className="bg-card border border-border rounded-card px-5 py-4 mb-5">
+            <div className="bg-card border border-border rounded-card px-5 py-4">
               <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest block mb-1.5">
                 Positioning
               </span>
@@ -183,12 +184,9 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             </div>
           )}
 
-          <div className="grid grid-cols-[1fr_340px] gap-5 items-start">
-
-            <div className="flex flex-col gap-4">
-
-              {/* Overview — has its own edit controls */}
-              <section className="bg-card border border-border rounded-card p-5">
+          {/* Row 1: Overview | AI Positioning — same height */}
+          <div className="grid grid-cols-[1fr_340px] gap-5 items-stretch">
+            <section className="bg-card border border-border rounded-card p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
                     Overview
@@ -319,81 +317,78 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                 )}
               </section>
 
-              {/* Notes — always editable, saves on every change */}
-              <section className="bg-card border border-border rounded-card p-5">
-                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
-                  Notes
-                </h3>
-                <textarea
-                  value={localNotes}
-                  onChange={e => {
-                    setLocalNotes(e.target.value)
-                    onUpdate(application.id, { notes: e.target.value })
-                  }}
-                  placeholder="Referral, recruiter contact, anything relevant…"
-                  rows={4}
-                  className={`${inputCls} resize-none`}
-                />
-              </section>
-
-              {/* Job description — always editable, saves on every change */}
-              <section className="bg-card border border-border rounded-card p-5">
-                <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
-                  Job description
-                </h3>
-                <textarea
-                  value={localJdText}
-                  onChange={e => {
-                    setLocalJdText(e.target.value)
-                    onUpdate(application.id, { jdText: e.target.value })
-                  }}
-                  placeholder="Paste the job description here to enable AI analysis…"
-                  rows={8}
-                  className={`${inputCls} resize-none`}
-                />
-              </section>
-
-              {/* Delete */}
-              <div className="flex justify-start pt-2 pb-1">
-                {confirmingDelete ? (
-                  <div className="flex items-center gap-3">
-                    <span className="text-[13px] text-ink-muted">Delete this application?</span>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingDelete(false)}
-                      className="px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { onDelete(application.id); onClose() }}
-                      className="px-3 py-1.5 rounded-button bg-stage-rejected text-white text-[13px] font-medium hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-stage-rejected focus-visible:ring-offset-1"
-                    >
-                      Yes, delete
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmingDelete(true)}
-                    className="text-[13px] text-ink-muted/60 hover:text-stage-rejected transition-colors focus-visible:ring-2 focus-visible:ring-stage-rejected rounded"
-                  >
-                    Delete application
-                  </button>
-                )}
-              </div>
-            </div>
-
             <PositioningPanel
               applicationId={application.id}
               jdText={localJdText}
             />
           </div>
 
-          {/* Analysis details — full width below the grid */}
+          {/* Row 2: Notes | Job Description — side by side, same height */}
+          <div className="grid grid-cols-2 gap-5 items-stretch">
+            <section className="bg-card border border-border rounded-card p-5 flex flex-col">
+              <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                Notes
+              </h3>
+              <textarea
+                value={localNotes}
+                onChange={e => {
+                  setLocalNotes(e.target.value)
+                  onUpdate(application.id, { notes: e.target.value })
+                }}
+                placeholder="Referral, recruiter contact, anything relevant…"
+                className={`${inputCls} resize-none flex-1 min-h-[120px]`}
+              />
+            </section>
+            <section className="bg-card border border-border rounded-card p-5 flex flex-col">
+              <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
+                Job description
+              </h3>
+              <textarea
+                value={localJdText}
+                onChange={e => {
+                  setLocalJdText(e.target.value)
+                  onUpdate(application.id, { jdText: e.target.value })
+                }}
+                placeholder="Paste the job description here to enable AI analysis…"
+                className={`${inputCls} resize-none flex-1 min-h-[120px]`}
+              />
+            </section>
+          </div>
+
+          {/* Delete */}
+          <div className="flex justify-start">
+            {confirmingDelete ? (
+              <div className="flex items-center gap-3">
+                <span className="text-[13px] text-ink-muted">Delete this application?</span>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  className="px-3 py-1.5 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { onDelete(application.id); onClose() }}
+                  className="px-3 py-1.5 rounded-button bg-stage-rejected text-white text-[13px] font-medium hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-stage-rejected focus-visible:ring-offset-1"
+                >
+                  Yes, delete
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(true)}
+                className="text-[13px] text-ink-muted/60 hover:text-stage-rejected transition-colors focus-visible:ring-2 focus-visible:ring-stage-rejected rounded"
+              >
+                Delete application
+              </button>
+            )}
+          </div>
+
+          {/* Analysis details — full width */}
           {analysis && (
-            <div className="mt-5 grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-5">
               <section className="bg-card border border-border rounded-card p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
                   Strengths

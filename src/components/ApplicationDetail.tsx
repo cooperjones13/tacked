@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import type { Id } from '../../convex/_generated/dataModel'
 import type { Application, Stage } from '../types'
 import { STAGES } from '../types'
 import { PositioningPanel } from './PositioningPanel'
@@ -64,6 +67,10 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
   const [localNotes, setLocalNotes] = useState(application.notes)
   const [localJdText, setLocalJdText] = useState(application.jdText)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+
+  const analysis = useQuery(api.analyses.getByApplication, {
+    applicationId: application.id as Id<'applications'>,
+  })
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -166,6 +173,16 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Positioning summary — full width so it has room to breathe */}
+          {analysis?.summary && (
+            <div className="bg-card border border-border rounded-card px-5 py-4 mb-5">
+              <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest block mb-1.5">
+                Positioning
+              </span>
+              <p className="text-[14px] text-ink leading-relaxed">{analysis.summary}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-[1fr_340px] gap-5 items-start">
 
             <div className="flex flex-col gap-4">

@@ -134,11 +134,6 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
           <PanelSection label="Fit score">
             <div className="h-2 bg-column rounded-full w-full animate-pulse" />
           </PanelSection>
-          <PanelSection label="Summary">
-            <div className="flex flex-col gap-1.5 animate-pulse">
-              <SkelLine /><SkelLine w="w-5/6" /><SkelLine w="w-4/6" />
-            </div>
-          </PanelSection>
           <PanelSection label="Strengths">
             <div className="flex flex-col gap-2 animate-pulse">
               {['w-4/5', 'w-full', 'w-3/5'].map((w, i) => (
@@ -179,11 +174,6 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
               </div>
               <span className="text-[13px] text-ink-muted mb-1">/100</span>
             </div>
-          </PanelSection>
-
-          {/* Summary */}
-          <PanelSection label="Positioning summary">
-            <p className="text-[13px] text-ink leading-relaxed">{analysis.summary}</p>
           </PanelSection>
 
           {/* Strengths */}

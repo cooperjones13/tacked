@@ -87,7 +87,7 @@ export function ApplicationCard({ application, onClick }: ApplicationCardProps) 
       ref={setNodeRef}
       style={style}
       onClick={onClick}
-      className="cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      className="w-[260px] cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       {...listeners}
       {...attributes}
     >

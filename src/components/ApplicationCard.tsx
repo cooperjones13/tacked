@@ -85,7 +85,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      className="w-[260px] cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
       {...listeners}
       {...attributes}
     >

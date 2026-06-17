@@ -49,7 +49,7 @@ export function Board({ applications, onMove }: Props) {
       <div
         role="region"
         aria-label="Job application board"
-        className="grid grid-cols-5 gap-4 flex-1 min-h-0"
+        className="flex flex-col divide-y divide-border"
       >
         {STAGES.map(stage => (
           <Column

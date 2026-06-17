@@ -1,6 +1,22 @@
 import { internalMutation, query } from './_generated/server'
 import { v } from 'convex/values'
 
+// Most recent fit score per application — used to decorate board cards
+export const listFitScores = query({
+  handler: async (ctx) => {
+    const all = await ctx.db.query('analyses').order('desc').collect()
+    const seen = new Set<string>()
+    return all
+      .filter(a => {
+        const key = a.applicationId as string
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .map(a => ({ applicationId: a.applicationId as string, fitScore: a.fitScore }))
+  },
+})
+
 export const getByApplication = query({
   args: { applicationId: v.id('applications') },
   handler: async (ctx, { applicationId }) => {

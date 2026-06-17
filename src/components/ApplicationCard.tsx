@@ -13,12 +13,19 @@ function formatDate(dateStr: string | null): string | null {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function fitScoreColor(score: number) {
+  if (score >= 70) return 'var(--color-stage-offer)'
+  if (score >= 40) return 'var(--color-stage-interview)'
+  return 'var(--color-stage-rejected)'
+}
+
 interface CardVisualProps {
   application: Application
+  fitScore?: number
   isOverlay?: boolean
 }
 
-function CardVisual({ application, isOverlay = false }: CardVisualProps) {
+function CardVisual({ application, fitScore, isOverlay = false }: CardVisualProps) {
   const stage = getStageConfig(application.stage)
   const date = formatDate(application.appliedDate)
 
@@ -37,9 +44,20 @@ function CardVisual({ application, isOverlay = false }: CardVisualProps) {
           style={{ backgroundColor: stage.color }}
           aria-hidden="true"
         />
-        <span className="text-[15px] font-semibold text-ink leading-tight truncate">
+        <span className="text-[15px] font-semibold text-ink leading-tight truncate flex-1">
           {application.company}
         </span>
+        {fitScore !== undefined && (
+          <span
+            className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 rounded"
+            style={{
+              color: fitScoreColor(fitScore),
+              backgroundColor: `color-mix(in srgb, ${fitScoreColor(fitScore)} 12%, transparent)`,
+            }}
+          >
+            {fitScore}
+          </span>
+        )}
       </div>
 
       <p className="text-[13px] font-medium text-ink-muted leading-snug mb-2.5 truncate">
@@ -67,10 +85,11 @@ function CardVisual({ application, isOverlay = false }: CardVisualProps) {
 
 interface ApplicationCardProps {
   application: Application
+  fitScore?: number
   onClick?: () => void
 }
 
-export function ApplicationCard({ application, onClick }: ApplicationCardProps) {
+export function ApplicationCard({ application, fitScore, onClick }: ApplicationCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: application.id,
     data: { stage: application.stage },
@@ -91,11 +110,11 @@ export function ApplicationCard({ application, onClick }: ApplicationCardProps) 
       {...listeners}
       {...attributes}
     >
-      <CardVisual application={application} />
+      <CardVisual application={application} fitScore={fitScore} />
     </div>
   )
 }
 
-export function ApplicationCardOverlay({ application }: ApplicationCardProps) {
-  return <CardVisual application={application} isOverlay />
+export function ApplicationCardOverlay({ application, fitScore }: ApplicationCardProps) {
+  return <CardVisual application={application} fitScore={fitScore} isOverlay />
 }

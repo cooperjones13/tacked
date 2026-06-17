@@ -66,7 +66,7 @@ function BoardApp() {
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
       <header className="sticky top-0 z-10 bg-canvas border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
-        <span className="text-[17px] font-semibold text-ink tracking-tight">Onward</span>
+        <span className="text-[26px] text-ink tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Tacked</span>
         <UserButton />
       </header>
 

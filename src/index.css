@@ -26,6 +26,7 @@
 
   /* --- Typography --- */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Crete Round', Georgia, serif;
 
   /* --- Radii --- */
   --radius-card: 8px;

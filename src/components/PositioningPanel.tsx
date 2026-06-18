@@ -69,7 +69,7 @@ export function PositioningPanel({
             type="button"
             onClick={onAnalyze}
             disabled={!hasJd || analyzing || !activeResumeId}
-            className="w-full px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 rounded-button bg-accent-btn text-white text-[13px] font-medium hover:bg-accent-btn-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {analyzing ? 'Analyzing…' : analysis ? 'Re-analyze' : 'Analyze'}
           </button>

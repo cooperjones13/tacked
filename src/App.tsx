@@ -110,10 +110,11 @@ const [dark, setDark] = useDarkMode()
           </button>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="px-3 sm:px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            aria-label="Add application"
+            className="px-3 sm:px-4 py-2 rounded-button bg-accent-btn text-white text-[13px] font-medium hover:bg-accent-btn-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
-            <span className="sm:hidden">+</span>
-            <span className="hidden sm:inline">+ Add application</span>
+            <span aria-hidden="true" className="sm:hidden">+</span>
+            <span aria-hidden="true" className="hidden sm:inline">+ Add application</span>
           </button>
           <div className="ml-2">
             <UserButton />
@@ -139,7 +140,7 @@ const [dark, setDark] = useDarkMode()
             </p>
             <button
               onClick={() => setDrawerOpen(true)}
-              className="mt-2 px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              className="mt-2 px-4 py-2 rounded-button bg-accent-btn text-white text-[13px] font-medium hover:bg-accent-btn-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               + Add application
             </button>

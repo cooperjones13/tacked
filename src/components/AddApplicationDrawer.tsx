@@ -290,7 +290,7 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              className="px-4 py-2 rounded-button bg-accent-btn text-white text-[13px] font-medium hover:bg-accent-btn-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               Add application
             </button>

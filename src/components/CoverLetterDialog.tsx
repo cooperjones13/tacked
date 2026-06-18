@@ -66,7 +66,7 @@ export function CoverLetterDialog({ letter, regenerating, onRegenerate, onClose 
             <button
               type="button"
               onClick={copy}
-              className="px-3 py-1.5 rounded-button bg-accent text-white text-[12px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+              className="px-3 py-1.5 rounded-button bg-accent-btn text-white text-[12px] font-medium hover:bg-accent-btn-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>

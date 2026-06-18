@@ -173,7 +173,7 @@ export const extractJobFromUrl = action({
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
     const response = await anthropic.messages.create({
-      model: MODEL,
+      model: 'claude-haiku-4-5',
       max_tokens: 4096,
       tools: [
         {
@@ -185,7 +185,7 @@ export const extractJobFromUrl = action({
               company: { type: 'string', description: 'Company name' },
               role: { type: 'string', description: 'Job title / role' },
               location: { type: 'string', description: 'Location or "Remote"' },
-              salary: { type: 'string', description: 'Salary range if listed, else empty string' },
+              salary: { type: 'string', description: 'Salary, formatted as "$XXXk–$XXXk" for ranges, or a short label like "Negotiable", "Competitive", or "DOE" for vague descriptions. Never more than 5 words. Empty string if not mentioned.' },
               jdText: { type: 'string', description: 'The COMPLETE job description text verbatim — all responsibilities, requirements, qualifications, and about sections. Do not summarize or shorten. This is the most important field.' },
             },
             required: ['company', 'role', 'location', 'salary', 'jdText'],

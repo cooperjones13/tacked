@@ -145,7 +145,7 @@ export function InterviewPrepDialog({ prep, regenerating, onRegenerate, onClose 
           ) : (
             <div className="flex flex-col gap-2">
               {questions.map((q, i) => (
-                <QuestionCard key={i} q={q} index={i} />
+                <QuestionCard key={`${activeSection}-${i}`} q={q} index={i} />
               ))}
             </div>
           )}

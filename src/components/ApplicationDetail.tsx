@@ -7,6 +7,7 @@ import { STAGES } from '../types'
 import { PositioningPanel } from './PositioningPanel'
 import { CoverLetterDialog } from './CoverLetterDialog'
 import { InterviewPrepDialog } from './InterviewPrepDialog'
+import { md } from '../utils/md'
 
 const inputCls =
   'w-full rounded-button border border-border bg-canvas px-3 py-2 text-[13px] text-ink ' +
@@ -456,7 +457,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   Positioning summary
                 </h3>
                 {analysis?.summary ? (
-                  <p className="text-[14px] text-ink leading-relaxed">{analysis.summary}</p>
+                  <p className="text-[14px] text-ink leading-relaxed">{md(analysis.summary)}</p>
                 ) : (
                   <p className="text-[13px] text-ink-muted/60">
                     Run analysis to see your positioning summary.
@@ -521,7 +522,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   {analysis.strengths.map((s, i) => (
                     <li key={i} className="flex items-start gap-2 text-[13px] text-ink">
                       <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-stage-offer)' }} />
-                      {s}
+                      <span>{md(s)}</span>
                     </li>
                   ))}
                 </ul>
@@ -535,7 +536,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   {analysis.gaps.map((g, i) => (
                     <li key={i} className="flex items-start gap-2 text-[13px] text-ink">
                       <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ backgroundColor: 'var(--color-stage-interview)' }} />
-                      {g}
+                      <span>{md(g)}</span>
                     </li>
                   ))}
                 </ul>
@@ -562,7 +563,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   {analysis.talkingPoints.map((tp, i) => (
                     <li key={i} className="flex items-start gap-2 text-[13px] text-ink leading-snug">
                       <span className="shrink-0 text-[11px] font-semibold text-ink-muted mt-0.5">{i + 1}.</span>
-                      {tp}
+                      <span>{md(tp)}</span>
                     </li>
                   ))}
                 </ul>

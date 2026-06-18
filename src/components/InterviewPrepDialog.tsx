@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { md } from '../utils/md'
 
 interface Question {
   question: string
@@ -43,7 +44,7 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
       </button>
       {open && (
         <div className="px-4 pb-4 pt-1 bg-canvas border-t border-border">
-          <p className="text-[13px] text-ink-muted leading-relaxed">{q.guidance}</p>
+          <p className="text-[13px] text-ink-muted leading-relaxed">{md(q.guidance)}</p>
         </div>
       )}
     </div>

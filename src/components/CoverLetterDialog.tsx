@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { mdBlock } from '../utils/md'
 
 interface Props {
   letter: string
@@ -87,9 +88,9 @@ export function CoverLetterDialog({ letter, regenerating, onRegenerate, onClose 
               <p className="text-[13px] text-ink-muted">Generating…</p>
             </div>
           ) : (
-            <p className="text-[14px] text-ink leading-[1.8] whitespace-pre-wrap">
-              {letter}
-            </p>
+            <div className="text-[14px] text-ink leading-[1.8] flex flex-col gap-4">
+              {mdBlock(letter)}
+            </div>
           )}
         </div>
       </div>

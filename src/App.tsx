@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useDarkMode } from './hooks/useDarkMode'
+import { exportApplicationsCSV } from './utils/exportCSV'
 import { useQuery } from 'convex/react'
 import { SignIn, UserButton, useAuth } from '@clerk/react'
 import { api } from '../convex/_generated/api'
@@ -55,7 +57,8 @@ function BoardApp() {
   const fitScores: Record<string, number> = Object.fromEntries(
     (fitScoreData ?? []).map(f => [f.applicationId, f.fitScore])
   )
-const [drawerOpen, setDrawerOpen] = useState(false)
+const [dark, setDark] = useDarkMode()
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerDefaultStage, setDrawerDefaultStage] = useState<Stage>('interested')
   const [resumeDrawerOpen, setResumeDrawerOpen] = useState(false)
   const [analyticsOpen, setAnalyticsOpen] = useState(false)
@@ -72,30 +75,45 @@ const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
-      <header className="sticky top-0 z-10 bg-canvas border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-[26px] text-ink tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Tacked</span>
-          <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
-          <span className="text-[12px] text-ink-muted">job search tracker</span>
+      <header className="sticky top-0 z-10 bg-canvas border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-[22px] sm:text-[26px] text-ink tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Tacked</span>
+          <div className="hidden sm:block w-px h-4 bg-border shrink-0" aria-hidden="true" />
+          <span className="hidden sm:block text-[12px] text-ink-muted">job search tracker</span>
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setDark(d => !d)}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="w-9 h-9 flex items-center justify-center rounded-button border border-border text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            {dark ? '☀' : '☾'}
+          </button>
+          <button
+            onClick={() => exportApplicationsCSV(applications, fitScores)}
+            disabled={applications.length === 0}
+            className="hidden sm:block px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Export
+          </button>
+          <button
             onClick={() => setAnalyticsOpen(true)}
-            className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="hidden sm:block px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Analytics
           </button>
           <button
             onClick={() => setResumeDrawerOpen(true)}
-            className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="hidden sm:block px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Resumes
           </button>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="px-3 sm:px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
-            + Add application
+            <span className="sm:hidden">+</span>
+            <span className="hidden sm:inline">+ Add application</span>
           </button>
           <div className="ml-2">
             <UserButton />
@@ -103,7 +121,7 @@ const [drawerOpen, setDrawerOpen] = useState(false)
         </div>
       </header>
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-3 sm:p-6">
         {applications.length > 0 && (
           <FilterBar
             filters={filters}

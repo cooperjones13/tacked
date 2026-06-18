@@ -177,7 +177,7 @@ export const extractJobFromUrl = action({
               role: { type: 'string', description: 'Job title / role' },
               location: { type: 'string', description: 'Location or "Remote"' },
               salary: { type: 'string', description: 'Salary range if listed, else empty string' },
-              jdText: { type: 'string', description: 'Full job description text, preserving structure' },
+              jdText: { type: 'string', description: 'The COMPLETE job description text verbatim — all responsibilities, requirements, qualifications, and about sections. Do not summarize or shorten. This is the most important field.' },
             },
             required: ['company', 'role', 'location', 'salary', 'jdText'],
           },
@@ -187,7 +187,7 @@ export const extractJobFromUrl = action({
       messages: [
         {
           role: 'user',
-          content: `Extract the job information from this page:\n\n${text}`,
+          content: `Extract the job posting details from this page. For jdText, copy the COMPLETE job description verbatim — every responsibility, requirement, and qualification. Do not summarize.\n\nPage content:\n${text}`,
         },
       ],
     })

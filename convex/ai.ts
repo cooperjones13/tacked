@@ -60,27 +60,27 @@ export const analyzeApplication = action({
               },
               summary: {
                 type: 'string',
-                description: 'One concise sentence on how the candidate should angle themselves for this role',
+                description: 'One concise sentence on how the candidate should angle themselves for this role. You may use **bold** to emphasise a key skill or phrase.',
               },
               strengths: {
                 type: 'array',
                 items: { type: 'string' },
-                description: '3–5 specific strengths from the resume that match the job requirements',
+                description: '3–5 specific strengths from the resume that match the job requirements. Use **bold** to highlight the specific skill or technology being called out.',
               },
               gaps: {
                 type: 'array',
                 items: { type: 'string' },
-                description: '2–4 gaps or areas to address or reframe when applying',
+                description: '2–4 gaps or areas to address or reframe when applying. Use **bold** for the specific gap.',
               },
               keywords: {
                 type: 'array',
                 items: { type: 'string' },
-                description: 'Important keywords from the JD that are present in the resume',
+                description: 'Important keywords from the JD that are present in the resume. Plain text only.',
               },
               talkingPoints: {
                 type: 'array',
                 items: { type: 'string' },
-                description: '3–5 specific talking points the candidate can use in interviews',
+                description: '3–5 specific talking points the candidate can use in interviews. Use **bold** for key phrases the candidate should emphasise when speaking.',
               },
             },
             required: ['fitScore', 'summary', 'strengths', 'gaps', 'keywords', 'talkingPoints'],
@@ -253,7 +253,7 @@ export const generateInterviewPrep = action({
                   type: 'object',
                   properties: {
                     question: { type: 'string' },
-                    guidance: { type: 'string', description: 'Specific talking points from the resume that answer this question' },
+                    guidance: { type: 'string', description: 'Specific talking points from the resume that answer this question. Use **bold** to highlight the most important phrase or experience to lead with.' },
                   },
                   required: ['question', 'guidance'],
                 },
@@ -318,7 +318,7 @@ Company: ${application.company}
 Job Description:
 ${application.jdText}
 
-For each question, give concrete guidance that references specific projects, skills, or experiences from the resume — not generic advice.`,
+For each question, give concrete guidance that references specific projects, skills, or experiences from the resume — not generic advice. Use **bold** to highlight the single most important phrase or experience to lead with in each answer.`,
             },
           ],
         },
@@ -394,7 +394,8 @@ Rules — breaking any of these makes the letter unusable:
 9. Be specific — name actual projects, technologies, or experiences from the resume. Generic praise adds nothing.
 10. Write with confidence. No hedging: no "I believe", "I feel", "I think", "I hope".
 11. Three paragraphs only: (1) a specific opening hook that names something concrete, (2) one or two examples of directly relevant work, (3) a brief, direct close — one or two sentences.
-12. Under 350 words total.`,
+12. Under 350 words total.
+13. You may use **bold** sparingly (1–2 times maximum) to emphasise a specific skill or achievement that directly matches the role. Do not use *italic*.`,
             },
           ],
         },

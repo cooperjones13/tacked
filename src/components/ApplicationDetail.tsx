@@ -495,19 +495,19 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
               )}
               <button
                 type="button"
-                onClick={storedLetter?.status !== 'pending' ? () => setLetterOpen(true) : handleGenerateLetter}
+                onClick={storedLetter?.status !== 'pending' && !!storedLetter?.letter ? () => setLetterOpen(true) : handleGenerateLetter}
                 disabled={!hasJd || !activeResumeId || generatingLetter}
                 className="flex-1 px-4 py-3 text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors border-r border-border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
-                {generatingLetter ? 'Generating…' : storedLetter?.status !== 'pending' ? 'View cover letter' : 'Generate cover letter'}
+                {generatingLetter ? 'Generating…' : storedLetter?.status !== 'pending' && !!storedLetter?.letter ? 'View cover letter' : 'Generate cover letter'}
               </button>
               <button
                 type="button"
-                onClick={storedPrep?.status !== 'pending' ? () => setPrepOpen(true) : handleGeneratePrep}
+                onClick={storedPrep?.status !== 'pending' && !!storedPrep?.behavioral?.length ? () => setPrepOpen(true) : handleGeneratePrep}
                 disabled={!hasJd || !activeResumeId || generatingPrep}
                 className="flex-1 px-4 py-3 text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
-                {generatingPrep ? 'Generating…' : storedPrep?.status !== 'pending' ? 'View interview prep' : 'Prepare for interview'}
+                {generatingPrep ? 'Generating…' : storedPrep?.status !== 'pending' && !!storedPrep?.behavioral?.length ? 'View interview prep' : 'Prepare for interview'}
               </button>
             </div>
 
@@ -519,7 +519,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             )}
           </div>
 
-          {letterOpen && storedLetter?.status !== 'pending' && storedLetter.letter && (
+          {letterOpen && storedLetter?.status !== 'pending' && !!storedLetter?.letter && storedLetter.letter && (
             <CoverLetterDialog
               letter={storedLetter.letter}
               regenerating={generatingLetter}
@@ -527,7 +527,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
               onClose={() => setLetterOpen(false)}
             />
           )}
-          {prepOpen && storedPrep?.status !== 'pending' && storedPrep.behavioral && (
+          {prepOpen && storedPrep?.status !== 'pending' && !!storedPrep?.behavioral?.length && storedPrep.behavioral && (
             <InterviewPrepDialog
               prep={storedPrep as Parameters<typeof InterviewPrepDialog>[0]['prep']}
               regenerating={generatingPrep}

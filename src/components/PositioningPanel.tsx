@@ -81,22 +81,10 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-card p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold text-ink-muted uppercase tracking-wider">
-          AI Positioning
-        </h2>
-        {analysis && !analyzing && (
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            disabled={!hasJd || !activeResumeId}
-            className="text-[12px] text-ink-muted/60 hover:text-accent transition-colors focus-visible:ring-2 focus-visible:ring-accent rounded disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Re-analyze
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <h2 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
+        AI Positioning
+      </h2>
 
       {resumes !== undefined && resumeList.length === 0 && (
         <p className="text-[13px] text-ink-muted/70 leading-relaxed">

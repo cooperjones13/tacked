@@ -394,13 +394,15 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             </section>
           </div>
 
-          {/* Row 3: AI Positioning (left) | Positioning Summary (right) */}
-          <div className="grid grid-cols-[340px_1fr] gap-5 items-stretch">
-            <PositioningPanel
-              applicationId={application.id}
-              jdText={localJdText}
-            />
-            <section className="bg-card border border-border rounded-card p-5 flex flex-col">
+          {/* Row 3: AI Positioning + Summary — one card */}
+          <div className="bg-card border border-border rounded-card flex items-stretch overflow-hidden">
+            <div className="w-[320px] shrink-0 p-5 border-r border-border">
+              <PositioningPanel
+                applicationId={application.id}
+                jdText={localJdText}
+              />
+            </div>
+            <div className="flex-1 p-5 flex flex-col">
               <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
                 Positioning summary
               </h3>
@@ -411,7 +413,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   Run analysis to see your positioning summary.
                 </p>
               )}
-            </section>
+            </div>
           </div>
 
           {/* Analysis details — full width */}

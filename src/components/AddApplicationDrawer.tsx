@@ -259,6 +259,16 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
               </div>
             </Field>
 
+            <Field label="Job description">
+              <textarea
+                value={form.jdText}
+                onChange={e => set('jdText', e.target.value)}
+                placeholder="Paste the job description here — or use Fill from URL above"
+                rows={5}
+                className={`${inputCls} resize-none`}
+              />
+            </Field>
+
             <Field label="Notes">
               <textarea
                 value={form.notes}

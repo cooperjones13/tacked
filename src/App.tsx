@@ -9,6 +9,7 @@ import type { Filters } from './components/FilterBar'
 import { AddApplicationDrawer } from './components/AddApplicationDrawer'
 import { ApplicationDetail } from './components/ApplicationDetail'
 import { ResumeDrawer } from './components/ResumeDrawer'
+import { AnalyticsDashboard } from './components/AnalyticsDashboard'
 import type { Application, Stage } from './types'
 
 function applyFilters(
@@ -57,6 +58,7 @@ function BoardApp() {
 const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerDefaultStage, setDrawerDefaultStage] = useState<Stage>('interested')
   const [resumeDrawerOpen, setResumeDrawerOpen] = useState(false)
+  const [analyticsOpen, setAnalyticsOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
 
@@ -77,6 +79,12 @@ const [drawerOpen, setDrawerOpen] = useState(false)
           <span className="text-[12px] text-ink-muted">job search tracker</span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAnalyticsOpen(true)}
+            className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            Analytics
+          </button>
           <button
             onClick={() => setResumeDrawerOpen(true)}
             className="px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
@@ -149,6 +157,9 @@ const [drawerOpen, setDrawerOpen] = useState(false)
         open={resumeDrawerOpen}
         onClose={() => setResumeDrawerOpen(false)}
       />
+      {analyticsOpen && (
+        <AnalyticsDashboard onClose={() => setAnalyticsOpen(false)} />
+      )}
       {selectedApp && (
         <ApplicationDetail
           application={selectedApp}

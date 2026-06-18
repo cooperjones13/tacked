@@ -3,6 +3,7 @@ import { useQuery, useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { CoverLetterDialog } from './CoverLetterDialog'
+import { InterviewPrepDialog } from './InterviewPrepDialog'
 
 interface Props {
   applicationId: string
@@ -16,6 +17,7 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
   const analysis = useQuery(api.analyses.getByApplication, { applicationId: appId })
   const runAnalysis = useAction(api.ai.analyzeApplication)
   const runCoverLetter = useAction(api.ai.generateCoverLetter)
+  const runInterviewPrep = useAction(api.ai.generateInterviewPrep)
 
   const [selectedResumeId, setSelectedResumeId] = useState<string>('')
   const [analyzing, setAnalyzing] = useState(false)
@@ -23,10 +25,30 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
   const [coverLetter, setCoverLetter] = useState<string | null>(null)
   const [generatingLetter, setGeneratingLetter] = useState(false)
   const [letterError, setLetterError] = useState<string | null>(null)
+  const [interviewPrep, setInterviewPrep] = useState<Parameters<typeof InterviewPrepDialog>[0]['prep'] | null>(null)
+  const [generatingPrep, setGeneratingPrep] = useState(false)
+  const [prepError, setPrepError] = useState<string | null>(null)
 
   const resumeList = resumes ?? []
   const activeResumeId = selectedResumeId || resumeList[0]?._id || ''
   const hasJd = jdText.trim().length > 0
+
+  async function handleGeneratePrep() {
+    if (!activeResumeId) return
+    setGeneratingPrep(true)
+    setPrepError(null)
+    try {
+      const prep = await runInterviewPrep({
+        applicationId: appId,
+        resumeId: activeResumeId as Id<'resumes'>,
+      })
+      setInterviewPrep(prep)
+    } catch (e) {
+      setPrepError(e instanceof Error ? e.message : 'Generation failed — please try again.')
+    } finally {
+      setGeneratingPrep(false)
+    }
+  }
 
   async function handleGenerateLetter() {
     if (!activeResumeId) return
@@ -117,7 +139,7 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
 
           {error && <p role="alert" className="text-[12px] text-stage-rejected">{error}</p>}
 
-          {/* Cover letter */}
+          {/* Cover letter + Interview prep */}
           <div className="border-t border-border pt-3 flex flex-col gap-2">
             <button
               type="button"
@@ -128,6 +150,15 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
               {generatingLetter ? 'Generating…' : 'Generate cover letter'}
             </button>
             {letterError && <p role="alert" className="text-[12px] text-stage-rejected">{letterError}</p>}
+            <button
+              type="button"
+              onClick={handleGeneratePrep}
+              disabled={!hasJd || generatingPrep}
+              className="w-full px-4 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {generatingPrep ? 'Generating…' : 'Prepare for interview'}
+            </button>
+            {prepError && <p role="alert" className="text-[12px] text-stage-rejected">{prepError}</p>}
           </div>
         </div>
       )}
@@ -139,6 +170,15 @@ export function PositioningPanel({ applicationId, jdText }: Props) {
           regenerating={generatingLetter}
           onRegenerate={handleGenerateLetter}
           onClose={() => setCoverLetter(null)}
+        />
+      )}
+
+      {interviewPrep && (
+        <InterviewPrepDialog
+          prep={interviewPrep}
+          regenerating={generatingPrep}
+          onRegenerate={handleGeneratePrep}
+          onClose={() => setInterviewPrep(null)}
         />
       )}
     </div>

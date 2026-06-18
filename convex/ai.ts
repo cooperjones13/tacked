@@ -126,6 +126,211 @@ ${application.jdText}`,
   },
 })
 
+interface ExtractedJob {
+  company: string
+  role: string
+  location: string
+  salary: string
+  jdText: string
+}
+
+export const extractJobFromUrl = action({
+  args: { url: v.string() },
+  handler: async (_ctx, { url }): Promise<ExtractedJob> => {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+      },
+    })
+
+    if (!res.ok) throw new Error(`Could not fetch that URL (${res.status})`)
+
+    const html = await res.text()
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+      .slice(0, 60000)
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 1024,
+      tools: [
+        {
+          name: 'extract_job',
+          description: 'Extract structured job information from a job posting page',
+          input_schema: {
+            type: 'object' as const,
+            properties: {
+              company: { type: 'string', description: 'Company name' },
+              role: { type: 'string', description: 'Job title / role' },
+              location: { type: 'string', description: 'Location or "Remote"' },
+              salary: { type: 'string', description: 'Salary range if listed, else empty string' },
+              jdText: { type: 'string', description: 'Full job description text, preserving structure' },
+            },
+            required: ['company', 'role', 'location', 'salary', 'jdText'],
+          },
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'extract_job' },
+      messages: [
+        {
+          role: 'user',
+          content: `Extract the job information from this page:\n\n${text}`,
+        },
+      ],
+    })
+
+    const toolUse = response.content.find(b => b.type === 'tool_use')
+    if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Could not extract job info from that page')
+    return toolUse.input as ExtractedJob
+  },
+})
+
+interface InterviewQuestion {
+  question: string
+  guidance: string
+}
+
+interface InterviewPrep {
+  behavioral: InterviewQuestion[]
+  technical: InterviewQuestion[]
+  roleSpecific: InterviewQuestion[]
+  culture: InterviewQuestion[]
+}
+
+export const generateInterviewPrep = action({
+  args: {
+    applicationId: v.id('applications'),
+    resumeId: v.id('resumes'),
+  },
+  handler: async (ctx, { applicationId, resumeId }): Promise<InterviewPrep> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthenticated')
+
+    const [application, resume] = await Promise.all([
+      ctx.runQuery(internal.applications.get, { id: applicationId }),
+      ctx.runQuery(internal.resumes.get, { id: resumeId }),
+    ])
+
+    if (!application) throw new Error('Application not found')
+    if (!resume) throw new Error('Resume not found')
+    if (!application.jdText.trim()) throw new Error('Add a job description before generating interview prep')
+
+    const pdfUrl = await ctx.storage.getUrl(resume.storageId)
+    if (!pdfUrl) throw new Error('Resume file not found')
+
+    const pdfBase64 = Buffer.from(
+      await (await fetch(pdfUrl)).arrayBuffer()
+    ).toString('base64')
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 3000,
+      tools: [
+        {
+          name: 'submit_interview_prep',
+          description: 'Submit structured interview preparation questions and guidance',
+          input_schema: {
+            type: 'object' as const,
+            properties: {
+              behavioral: {
+                type: 'array',
+                description: '3 behavioral questions (STAR format), with guidance drawing from specific resume experiences',
+                items: {
+                  type: 'object',
+                  properties: {
+                    question: { type: 'string' },
+                    guidance: { type: 'string', description: 'Specific talking points from the resume that answer this question' },
+                  },
+                  required: ['question', 'guidance'],
+                },
+              },
+              technical: {
+                type: 'array',
+                description: '3 technical questions based on skills in the JD, with guidance on how to answer given the resume',
+                items: {
+                  type: 'object',
+                  properties: {
+                    question: { type: 'string' },
+                    guidance: { type: 'string' },
+                  },
+                  required: ['question', 'guidance'],
+                },
+              },
+              roleSpecific: {
+                type: 'array',
+                description: '3 questions specific to this role and company, with guidance',
+                items: {
+                  type: 'object',
+                  properties: {
+                    question: { type: 'string' },
+                    guidance: { type: 'string' },
+                  },
+                  required: ['question', 'guidance'],
+                },
+              },
+              culture: {
+                type: 'array',
+                description: '2 culture/values questions likely for this company, with guidance',
+                items: {
+                  type: 'object',
+                  properties: {
+                    question: { type: 'string' },
+                    guidance: { type: 'string' },
+                  },
+                  required: ['question', 'guidance'],
+                },
+              },
+            },
+            required: ['behavioral', 'technical', 'roleSpecific', 'culture'],
+          },
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'submit_interview_prep' },
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 },
+            },
+            {
+              type: 'text',
+              text: `Generate targeted interview preparation for this candidate applying to the role below.
+
+Role: ${application.role}
+Company: ${application.company}
+
+Job Description:
+${application.jdText}
+
+For each question, give concrete guidance that references specific projects, skills, or experiences from the resume — not generic advice.`,
+            },
+          ],
+        },
+      ],
+    })
+
+    const toolUse = response.content.find(b => b.type === 'tool_use')
+    if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No interview prep returned')
+    return toolUse.input as InterviewPrep
+  },
+})
+
 export const generateCoverLetter = action({
   args: {
     applicationId: v.id('applications'),

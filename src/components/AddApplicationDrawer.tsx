@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, type FormEvent, type ReactNode } from 'react'
+import { useAction } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 import type { Application, Stage } from '../types'
 import { STAGES } from '../types'
 
@@ -62,6 +64,32 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
 
   const [form, setForm] = useState<FormData>({ ...INITIAL, stage: defaultStage ?? 'interested' })
   const firstRef = useRef<HTMLInputElement>(null)
+  const extractJob = useAction(api.ai.extractJobFromUrl)
+  const [urlInput, setUrlInput] = useState('')
+  const [extracting, setExtracting] = useState(false)
+  const [extractError, setExtractError] = useState<string | null>(null)
+
+  async function handleFillFromUrl() {
+    if (!urlInput.trim()) return
+    setExtracting(true)
+    setExtractError(null)
+    try {
+      const job = await extractJob({ url: urlInput.trim() })
+      setForm(f => ({
+        ...f,
+        company: job.company || f.company,
+        role: job.role || f.role,
+        location: job.location || f.location,
+        salary: job.salary || f.salary,
+        jobUrl: urlInput.trim(),
+        jdText: job.jdText || f.jdText,
+      }))
+    } catch (e) {
+      setExtractError(e instanceof Error ? e.message : 'Could not fetch that URL — try pasting the fields manually.')
+    } finally {
+      setExtracting(false)
+    }
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -119,9 +147,37 @@ function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
 
         <form onSubmit={handleSubmit} autoComplete="off" className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
+            {/* URL autofill */}
+            <div className="flex flex-col gap-2 pb-3 border-b border-border">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
+                  Fill from job URL
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    ref={firstRef}
+                    type="url"
+                    value={urlInput}
+                    onChange={e => setUrlInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleFillFromUrl() } }}
+                    placeholder="https://..."
+                    className={`${inputCls} flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleFillFromUrl}
+                    disabled={extracting || !urlInput.trim()}
+                    className="px-3 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {extracting ? 'Filling…' : 'Fill'}
+                  </button>
+                </div>
+              </label>
+              {extractError && <p role="alert" className="text-[12px] text-stage-rejected">{extractError}</p>}
+            </div>
+
             <Field label="Company" required>
               <input
-                ref={firstRef}
                 type="text"
                 value={form.company}
                 onChange={e => set('company', e.target.value)}

@@ -3,6 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { action } from './_generated/server'
 import { internal } from './_generated/api'
+// coverLetters and interviewPreps are persisted via internal mutations
 import { v } from 'convex/values'
 
 const MODEL = 'claude-sonnet-4-6'
@@ -214,9 +215,10 @@ export const generateInterviewPrep = action({
     applicationId: v.id('applications'),
     resumeId: v.id('resumes'),
   },
-  handler: async (ctx, { applicationId, resumeId }): Promise<InterviewPrep> => {
+  handler: async (ctx, { applicationId, resumeId }): Promise<void> => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error('Unauthenticated')
+    const userId = identity.subject
 
     const [application, resume] = await Promise.all([
       ctx.runQuery(internal.applications.get, { id: applicationId }),
@@ -327,7 +329,17 @@ For each question, give concrete guidance that references specific projects, ski
 
     const toolUse = response.content.find(b => b.type === 'tool_use')
     if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No interview prep returned')
-    return toolUse.input as InterviewPrep
+    const result = toolUse.input as InterviewPrep
+
+    await ctx.runMutation(internal.interviewPreps.upsert, {
+      userId,
+      applicationId,
+      behavioral: result.behavioral,
+      technical: result.technical,
+      roleSpecific: result.roleSpecific,
+      culture: result.culture,
+      model: MODEL,
+    })
   },
 })
 
@@ -336,9 +348,10 @@ export const generateCoverLetter = action({
     applicationId: v.id('applications'),
     resumeId: v.id('resumes'),
   },
-  handler: async (ctx, { applicationId, resumeId }): Promise<string> => {
+  handler: async (ctx, { applicationId, resumeId }): Promise<void> => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error('Unauthenticated')
+    const userId = identity.subject
 
     const [application, resume] = await Promise.all([
       ctx.runQuery(internal.applications.get, { id: applicationId }),
@@ -404,6 +417,12 @@ Rules — breaking any of these makes the letter unusable:
 
     const textBlock = response.content.find(b => b.type === 'text')
     if (!textBlock || textBlock.type !== 'text') throw new Error('No cover letter returned')
-    return textBlock.text
+
+    await ctx.runMutation(internal.coverLetters.upsert, {
+      userId,
+      applicationId,
+      letter: textBlock.text,
+      model: MODEL,
+    })
   },
 })

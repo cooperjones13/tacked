@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useQuery, useAction } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 
@@ -8,33 +7,27 @@ interface Props {
   jdText: string
   selectedResumeId: string
   onResumeChange: (id: string) => void
+  analyzing: boolean
+  onAnalyze: () => void
+  analyzeError: string | null
 }
 
-export function PositioningPanel({ applicationId, jdText, selectedResumeId, onResumeChange }: Props) {
+export function PositioningPanel({
+  applicationId,
+  jdText,
+  selectedResumeId,
+  onResumeChange,
+  analyzing,
+  onAnalyze,
+  analyzeError,
+}: Props) {
   const appId = applicationId as Id<'applications'>
   const resumes = useQuery(api.resumes.list)
   const analysis = useQuery(api.analyses.getByApplication, { applicationId: appId })
-  const runAnalysis = useAction(api.ai.analyzeApplication)
-
-  const [analyzing, setAnalyzing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const resumeList = resumes ?? []
   const activeResumeId = selectedResumeId || resumeList[0]?._id || ''
   const hasJd = jdText.trim().length > 0
-
-  async function handleAnalyze() {
-    if (!activeResumeId || !hasJd) return
-    setAnalyzing(true)
-    setError(null)
-    try {
-      await runAnalysis({ applicationId: appId, resumeId: activeResumeId as Id<'resumes'> })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Analysis failed — please try again.')
-    } finally {
-      setAnalyzing(false)
-    }
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,14 +67,16 @@ export function PositioningPanel({ applicationId, jdText, selectedResumeId, onRe
 
           <button
             type="button"
-            onClick={handleAnalyze}
-            disabled={!hasJd || analyzing}
+            onClick={onAnalyze}
+            disabled={!hasJd || analyzing || !activeResumeId}
             className="w-full px-4 py-2 rounded-button bg-accent text-white text-[13px] font-medium hover:bg-accent-hover transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {analyzing ? 'Analyzing…' : analysis ? 'Re-analyze' : 'Analyze'}
           </button>
 
-          {error && <p role="alert" className="text-[12px] text-stage-rejected">{error}</p>}
+          {analyzeError && (
+            <p role="alert" className="text-[12px] text-stage-rejected">{analyzeError}</p>
+          )}
         </div>
       )}
     </div>

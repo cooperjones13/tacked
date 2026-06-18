@@ -117,28 +117,50 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
   const [localJdText, setLocalJdText] = useState(application.jdText)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [selectedResumeId, setSelectedResumeId] = useState('')
-  const [coverLetter, setCoverLetter] = useState<string | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [generatingLetter, setGeneratingLetter] = useState(false)
   const [letterError, setLetterError] = useState<string | null>(null)
-  const [interviewPrep, setInterviewPrep] = useState<Parameters<typeof InterviewPrepDialog>[0]['prep'] | null>(null)
+  const [letterOpen, setLetterOpen] = useState(false)
   const [generatingPrep, setGeneratingPrep] = useState(false)
   const [prepError, setPrepError] = useState<string | null>(null)
+  const [prepOpen, setPrepOpen] = useState(false)
 
   const resumes = useQuery(api.resumes.list)
+  const runAnalysis = useAction(api.ai.analyzeApplication)
   const runCoverLetter = useAction(api.ai.generateCoverLetter)
   const runInterviewPrep = useAction(api.ai.generateInterviewPrep)
+
+  const appId = application.id as Id<'applications'>
+  const analysis = useQuery(api.analyses.getByApplication, { applicationId: appId })
+  const storedLetter = useQuery(api.coverLetters.getByApplication, { applicationId: appId })
+  const storedPrep = useQuery(api.interviewPreps.getByApplication, { applicationId: appId })
+  const history = useQuery(api.stageHistory.getByApplication, { applicationId: appId })
 
   const resumeList = resumes ?? []
   const activeResumeId = (selectedResumeId || resumeList[0]?._id || '') as Id<'resumes'>
   const hasJd = localJdText.trim().length > 0
+
+  async function handleAnalyze() {
+    if (!activeResumeId || !hasJd) return
+    setAnalyzing(true)
+    setAnalyzeError(null)
+    try {
+      await runAnalysis({ applicationId: appId, resumeId: activeResumeId })
+    } catch (e) {
+      setAnalyzeError(e instanceof Error ? e.message : 'Analysis failed — please try again.')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   async function handleGenerateLetter() {
     if (!activeResumeId || !hasJd) return
     setGeneratingLetter(true)
     setLetterError(null)
     try {
-      const letter = await runCoverLetter({ applicationId: application.id as Id<'applications'>, resumeId: activeResumeId })
-      setCoverLetter(letter)
+      await runCoverLetter({ applicationId: appId, resumeId: activeResumeId })
+      setLetterOpen(true)
     } catch (e) {
       setLetterError(e instanceof Error ? e.message : 'Generation failed — please try again.')
     } finally {
@@ -151,22 +173,14 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
     setGeneratingPrep(true)
     setPrepError(null)
     try {
-      const prep = await runInterviewPrep({ applicationId: application.id as Id<'applications'>, resumeId: activeResumeId })
-      setInterviewPrep(prep)
+      await runInterviewPrep({ applicationId: appId, resumeId: activeResumeId })
+      setPrepOpen(true)
     } catch (e) {
       setPrepError(e instanceof Error ? e.message : 'Generation failed — please try again.')
     } finally {
       setGeneratingPrep(false)
     }
   }
-
-  const analysis = useQuery(api.analyses.getByApplication, {
-    applicationId: application.id as Id<'applications'>,
-  })
-
-  const history = useQuery(api.stageHistory.getByApplication, {
-    applicationId: application.id as Id<'applications'>,
-  })
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -450,13 +464,22 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
                   jdText={localJdText}
                   selectedResumeId={selectedResumeId}
                   onResumeChange={setSelectedResumeId}
+                  analyzing={analyzing}
+                  onAnalyze={handleAnalyze}
+                  analyzeError={analyzeError}
                 />
               </div>
               <div className="flex-1 min-w-0 p-5 flex flex-col">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">
                   Positioning summary
                 </h3>
-                {analysis?.summary ? (
+                {analyzing ? (
+                  <div className="flex flex-col gap-2 animate-pulse">
+                    <div className="h-3 bg-column rounded w-full" />
+                    <div className="h-3 bg-column rounded w-5/6" />
+                    <div className="h-3 bg-column rounded w-4/6" />
+                  </div>
+                ) : analysis?.summary ? (
                   <p className="text-[14px] text-ink leading-relaxed">{md(analysis.summary)}</p>
                 ) : (
                   <p className="text-[13px] text-ink-muted/60">
@@ -467,22 +490,28 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             </div>
 
             {/* Bottom: action buttons spanning full width */}
-            <div className="flex border-t border-border">
+            <div className="flex border-t border-border relative">
+              {/* Progress bar while generating */}
+              {(generatingLetter || generatingPrep) && (
+                <div className="absolute inset-x-0 top-0 h-0.5 overflow-hidden">
+                  <div className="h-full bg-accent/40 animate-pulse" />
+                </div>
+              )}
               <button
                 type="button"
-                onClick={handleGenerateLetter}
+                onClick={storedLetter ? () => setLetterOpen(true) : handleGenerateLetter}
                 disabled={!hasJd || !activeResumeId || generatingLetter}
                 className="flex-1 px-4 py-3 text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors border-r border-border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
-                {generatingLetter ? 'Generating…' : 'Generate cover letter'}
+                {generatingLetter ? 'Generating…' : storedLetter ? 'View cover letter' : 'Generate cover letter'}
               </button>
               <button
                 type="button"
-                onClick={handleGeneratePrep}
+                onClick={storedPrep ? () => setPrepOpen(true) : handleGeneratePrep}
                 disabled={!hasJd || !activeResumeId || generatingPrep}
                 className="flex-1 px-4 py-3 text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
-                {generatingPrep ? 'Generating…' : 'Prepare for interview'}
+                {generatingPrep ? 'Generating…' : storedPrep ? 'View interview prep' : 'Prepare for interview'}
               </button>
             </div>
 
@@ -494,25 +523,41 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
             )}
           </div>
 
-          {coverLetter && (
+          {letterOpen && storedLetter && (
             <CoverLetterDialog
-              letter={coverLetter}
+              letter={storedLetter.letter}
               regenerating={generatingLetter}
               onRegenerate={handleGenerateLetter}
-              onClose={() => setCoverLetter(null)}
+              onClose={() => setLetterOpen(false)}
             />
           )}
-          {interviewPrep && (
+          {prepOpen && storedPrep && (
             <InterviewPrepDialog
-              prep={interviewPrep}
+              prep={storedPrep}
               regenerating={generatingPrep}
               onRegenerate={handleGeneratePrep}
-              onClose={() => setInterviewPrep(null)}
+              onClose={() => setPrepOpen(false)}
             />
           )}
 
+          {/* Analysis skeleton while analyzing */}
+          {analyzing && (
+            <div className="grid grid-cols-2 gap-5">
+              {(['Strengths', 'Gaps', 'Keywords', 'Talking points'] as const).map(label => (
+                <section key={label} className="bg-card border border-border rounded-card p-5">
+                  <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">{label}</h3>
+                  <div className="flex flex-col gap-2 animate-pulse">
+                    {[100, 80, 90].map((w, i) => (
+                      <div key={i} className="h-3 bg-column rounded" style={{ width: `${w}%` }} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+
           {/* Analysis details — full width */}
-          {analysis && (
+          {!analyzing && analysis && (
             <div className="grid grid-cols-2 gap-5">
               <section className="bg-card border border-border rounded-card p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-3">

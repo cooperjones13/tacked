@@ -44,6 +44,23 @@ export default defineSchema({
     model: v.string(),
   }).index('by_application', ['applicationId']),
 
+  coverLetters: defineTable({
+    userId: v.string(),
+    applicationId: v.id('applications'),
+    letter: v.string(),
+    model: v.string(),
+  }).index('by_application', ['applicationId']),
+
+  interviewPreps: defineTable({
+    userId: v.string(),
+    applicationId: v.id('applications'),
+    behavioral: v.array(v.object({ question: v.string(), guidance: v.string() })),
+    technical: v.array(v.object({ question: v.string(), guidance: v.string() })),
+    roleSpecific: v.array(v.object({ question: v.string(), guidance: v.string() })),
+    culture: v.array(v.object({ question: v.string(), guidance: v.string() })),
+    model: v.string(),
+  }).index('by_application', ['applicationId']),
+
   stageHistory: defineTable({
     userId: v.optional(v.string()),
     applicationId: v.id('applications'),

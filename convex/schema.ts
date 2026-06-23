@@ -50,7 +50,9 @@ export default defineSchema({
     status: v.optional(v.union(v.literal('pending'), v.literal('complete'))),
     letter: v.optional(v.string()),
     model: v.string(),
-  }).index('by_application', ['applicationId']),
+  })
+    .index('by_application', ['applicationId'])
+    .index('by_user', ['userId']),
 
   interviewPreps: defineTable({
     userId: v.string(),
@@ -61,7 +63,9 @@ export default defineSchema({
     roleSpecific: v.optional(v.array(v.object({ question: v.string(), guidance: v.string() }))),
     culture: v.optional(v.array(v.object({ question: v.string(), guidance: v.string() }))),
     model: v.string(),
-  }).index('by_application', ['applicationId']),
+  })
+    .index('by_application', ['applicationId'])
+    .index('by_user', ['userId']),
 
   stageHistory: defineTable({
     userId: v.optional(v.string()),

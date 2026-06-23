@@ -3,6 +3,18 @@ import { v } from 'convex/values'
 
 const questionV = v.object({ question: v.string(), guidance: v.string() })
 
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return []
+    return ctx.db
+      .query('interviewPreps')
+      .withIndex('by_user', q => q.eq('userId', identity.subject))
+      .take(500)
+  },
+})
+
 export const getByApplication = query({
   args: { applicationId: v.id('applications') },
   handler: async (ctx, { applicationId }) => {

@@ -90,9 +90,10 @@ interface Props {
   onClose: () => void
   onUpdate: (id: string, patch: Partial<Omit<Application, 'id' | 'createdAt'>>) => void
   onDelete: (id: string) => void
+  onToast?: (message: string, type: 'info' | 'success', id?: string) => void
 }
 
-export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: Props) {
+export function ApplicationDetail({ application, onClose, onUpdate, onDelete, onToast }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
@@ -159,6 +160,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
   async function handleGenerateLetter() {
     if (!activeResumeId || !hasJd) return
     setLetterError(null)
+    onToast?.(`Generating cover letter for ${application.company}…`, 'info', `letter-${application.id}`)
     try {
       await runCoverLetter({ applicationId: appId, resumeId: activeResumeId })
       setLetterOpen(true)
@@ -170,6 +172,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete }: 
   async function handleGeneratePrep() {
     if (!activeResumeId || !hasJd) return
     setPrepError(null)
+    onToast?.(`Generating interview prep for ${application.company}…`, 'info', `prep-${application.id}`)
     try {
       await runInterviewPrep({ applicationId: appId, resumeId: activeResumeId })
       setPrepOpen(true)

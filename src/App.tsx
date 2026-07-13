@@ -14,6 +14,7 @@ import { AnalyticsDashboard } from './components/AnalyticsDashboard'
 import { Toaster } from './components/Toaster'
 import type { Toast } from './components/Toaster'
 import { Landing } from './components/Landing'
+import { Logo } from './components/Logo'
 import type { Application, Stage, Filters } from './types'
 import { DEFAULT_FILTERS } from './types'
 
@@ -157,6 +158,7 @@ function BoardApp() {
     <div className="min-h-screen bg-canvas flex flex-col">
       <header className="sticky top-0 z-10 bg-canvas border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
+          <Logo className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
           <span className="text-[22px] sm:text-[26px] text-ink tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Tacked</span>
           <div className="hidden sm:block w-px h-4 bg-border shrink-0" aria-hidden="true" />
           <span className="hidden sm:block text-[12px] text-ink-muted">job search tracker</span>

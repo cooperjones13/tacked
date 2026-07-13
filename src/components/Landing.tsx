@@ -1,5 +1,6 @@
 import { SignIn } from '@clerk/react'
 import { STAGES } from '../types'
+import { Logo } from './Logo'
 
 const FEATURES = [
   {
@@ -24,6 +25,7 @@ export function Landing() {
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
       <header className="px-4 sm:px-6 py-4 flex items-center gap-2 sm:gap-3">
+        <Logo className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
         <span className="text-[22px] sm:text-[26px] text-ink tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
           Tacked
         </span>

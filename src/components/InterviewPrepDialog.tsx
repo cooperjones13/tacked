@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import { md } from '../utils/md'
 
 interface Question {
@@ -54,7 +54,9 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
 export function InterviewPrepDialog({ prep, regenerating, onRegenerate, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
   const [activeSection, setActiveSection] = useState<keyof InterviewPrep>('behavioral')
 
   useEffect(() => {

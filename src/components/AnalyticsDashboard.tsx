@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useLayoutEffect } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { STAGES } from '../types'
@@ -32,7 +32,9 @@ function Bar({ value, max, color }: { value: number; max: number; color: string 
 export function AnalyticsDashboard({ onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
   const stats = useQuery(api.analytics.getPipelineStats)
 
   useEffect(() => {

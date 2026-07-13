@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent, type ReactNode } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, type FormEvent, type ReactNode } from 'react'
 import { useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Application, Stage } from '../types'
@@ -60,7 +60,9 @@ export function AddApplicationDrawer({ open, onClose, onAdd, defaultStage }: Pro
 function ModalContent({ onClose, onAdd, defaultStage }: Omit<Props, 'open'>) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   const [form, setForm] = useState<FormData>({ ...INITIAL, stage: defaultStage ?? 'interested' })
   const firstRef = useRef<HTMLInputElement>(null)

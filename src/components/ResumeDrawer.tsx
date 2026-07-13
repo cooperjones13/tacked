@@ -2,6 +2,7 @@ import {
   useRef,
   useState,
   useEffect,
+  useLayoutEffect,
   type ChangeEvent,
   type KeyboardEvent,
 } from 'react'
@@ -28,7 +29,9 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
   const url = useQuery(api.resumes.getUrl, { resumeId })
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -101,7 +104,9 @@ export function ResumeDrawer({ open, onClose }: Props) {
 function ResumeModal({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   const resumes = useQuery(api.resumes.list)
   const generateUploadUrl = useMutation(api.resumes.generateUploadUrl)

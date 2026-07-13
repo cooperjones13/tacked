@@ -1,14 +1,5 @@
-export interface Filters {
-  query: string
-  dateRange: 'all' | '7d' | '30d' | '90d' | 'year'
-  score: 'all' | 'strong' | 'fair' | 'weak' | 'none'
-}
-
-export const DEFAULT_FILTERS: Filters = {
-  query: '',
-  dateRange: 'all',
-  score: 'all',
-}
+import type { Filters } from '../types'
+import { DEFAULT_FILTERS } from '../types'
 
 interface Props {
   filters: Filters

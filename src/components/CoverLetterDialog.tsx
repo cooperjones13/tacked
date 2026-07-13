@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import { mdBlock } from '../utils/md'
 
 interface Props {
@@ -11,7 +11,9 @@ interface Props {
 export function CoverLetterDialog({ letter, regenerating, onRegenerate, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {

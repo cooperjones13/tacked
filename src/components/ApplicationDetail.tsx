@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, useLayoutEffect, type ReactNode } from 'react'
 import { useQuery, useAction } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
@@ -96,12 +96,16 @@ interface Props {
 export function ApplicationDetail({ application, onClose, onUpdate, onDelete, onToast }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   // Overview edit state
   const [overviewEditing, setOverviewEditing] = useState(false)
   const overviewEditingRef = useRef(false)
-  overviewEditingRef.current = overviewEditing
+  useLayoutEffect(() => {
+    overviewEditingRef.current = overviewEditing
+  })
 
   const [draft, setDraft] = useState<OverviewDraft>({
     company: application.company,

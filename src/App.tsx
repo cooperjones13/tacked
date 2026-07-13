@@ -1,20 +1,21 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react'
 import { useDarkMode } from './hooks/useDarkMode'
 import { exportApplicationsCSV } from './utils/exportCSV'
 import { useQuery } from 'convex/react'
-import { SignIn, UserButton, useAuth } from '@clerk/react'
+import { UserButton, useAuth } from '@clerk/react'
 import { api } from '../convex/_generated/api'
 import { useBoard } from './hooks/useBoard'
 import { Board } from './components/Board'
-import { FilterBar, DEFAULT_FILTERS } from './components/FilterBar'
-import type { Filters } from './components/FilterBar'
+import { FilterBar } from './components/FilterBar'
 import { AddApplicationDrawer } from './components/AddApplicationDrawer'
 import { ApplicationDetail } from './components/ApplicationDetail'
 import { ResumeDrawer } from './components/ResumeDrawer'
 import { AnalyticsDashboard } from './components/AnalyticsDashboard'
 import { Toaster } from './components/Toaster'
 import type { Toast } from './components/Toaster'
-import type { Application, Stage } from './types'
+import { Landing } from './components/Landing'
+import type { Application, Stage, Filters } from './types'
+import { DEFAULT_FILTERS } from './types'
 
 function applyFilters(
   apps: Application[],
@@ -59,8 +60,10 @@ function BoardApp() {
   const fitScores: Record<string, number> = Object.fromEntries(
     (fitScoreData ?? []).map(f => [f.applicationId, f.fitScore])
   )
-  const allLetters = useQuery(api.coverLetters.listAll) ?? []
-  const allPreps = useQuery(api.interviewPreps.listAll) ?? []
+  const allLettersData = useQuery(api.coverLetters.listAll)
+  const allLetters = useMemo(() => allLettersData ?? [], [allLettersData])
+  const allPrepsData = useQuery(api.interviewPreps.listAll)
+  const allPreps = useMemo(() => allPrepsData ?? [], [allPrepsData])
 
   const [dark, setDark] = useDarkMode()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -88,13 +91,15 @@ function BoardApp() {
 
   // Detect cover letter and interview prep completions
   const applicationsRef = useRef(applications)
-  applicationsRef.current = applications
   const prevLetterStatuses = useRef(new Map<string, string | undefined>())
   const prevPrepStatuses = useRef(new Map<string, string | undefined>())
   const addToastRef = useRef(addToast)
-  addToastRef.current = addToast
   const dismissToastRef = useRef(dismissToast)
-  dismissToastRef.current = dismissToast
+  useLayoutEffect(() => {
+    applicationsRef.current = applications
+    addToastRef.current = addToast
+    dismissToastRef.current = dismissToast
+  })
 
   useEffect(() => {
     for (const letter of allLetters) {
@@ -267,11 +272,7 @@ function App() {
   }
 
   if (!isSignedIn) {
-    return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center">
-        <SignIn />
-      </div>
-    )
+    return <Landing />
   }
 
   return <BoardApp />

@@ -32,3 +32,15 @@ export const STAGES: StageConfig[] = [
   { id: 'offer',      label: 'Offer',      color: 'var(--color-stage-offer)' },
   { id: 'rejected',   label: 'Rejected',   color: 'var(--color-stage-rejected)' },
 ]
+
+export interface Filters {
+  query: string
+  dateRange: 'all' | '7d' | '30d' | '90d' | 'year'
+  score: 'all' | 'strong' | 'fair' | 'weak' | 'none'
+}
+
+export const DEFAULT_FILTERS: Filters = {
+  query: '',
+  dateRange: 'all',
+  score: 'all',
+}

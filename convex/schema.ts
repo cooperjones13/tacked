@@ -21,6 +21,9 @@ export default defineSchema({
     stage,
     appliedDate: v.union(v.string(), v.null()),
     notes: v.string(),
+    archived: v.optional(v.boolean()),
+    extracting: v.optional(v.boolean()),
+    extractionFailed: v.optional(v.boolean()),
   }).index('by_user', ['userId']),
 
   resumes: defineTable({

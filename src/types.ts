@@ -16,7 +16,13 @@ export interface Application {
   stage: Stage
   appliedDate: string | null
   notes: string
+  archived: boolean
+  extracting: boolean
+  extractionFailed: boolean
   createdAt: string
+  // True only for the brief window between an optimistic create and the
+  // server confirming the real document — this id is not yet stable.
+  pending: boolean
 }
 
 export interface StageConfig {
@@ -35,7 +41,7 @@ export const STAGES: StageConfig[] = [
 
 export interface Filters {
   query: string
-  dateRange: 'all' | '7d' | '30d' | '90d' | 'year'
+  dateRange: 'all' | 'today' | '7d' | '30d' | '90d' | 'year'
   score: 'all' | 'strong' | 'fair' | 'weak' | 'none'
 }
 

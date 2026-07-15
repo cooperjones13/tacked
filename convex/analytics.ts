@@ -54,11 +54,11 @@ export const getPipelineStats = query({
       avgDaysPerStage[stage] = Math.round(avg / (1000 * 60 * 60 * 24) * 10) / 10
     }
 
-    // Applications submitted per week (last 12 weeks, applied date only)
+    // Applications submitted per week (last 8 weeks, applied date only)
     const now = Date.now()
     const weekMs = 7 * 24 * 60 * 60 * 1000
     const weeks: { label: string; count: number }[] = []
-    for (let i = 11; i >= 0; i--) {
+    for (let i = 7; i >= 0; i--) {
       const start = now - (i + 1) * weekMs
       const end = now - i * weekMs
       const count = myApps.filter(a => {

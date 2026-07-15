@@ -9,10 +9,10 @@ interface Props {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-card border border-border rounded-card p-5">
-      <p className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-[32px] font-bold text-ink leading-none">{value}</p>
-      {sub && <p className="text-[12px] text-ink-muted mt-1">{sub}</p>}
+    <div className="bg-card border border-border rounded-card p-3 sm:p-5">
+      <p className="text-[10px] sm:text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-1">{label}</p>
+      <p className="text-[24px] sm:text-[32px] font-bold text-ink leading-none">{value}</p>
+      {sub && <p className="text-[11px] sm:text-[12px] text-ink-muted mt-1">{sub}</p>}
     </div>
   )
 }
@@ -37,6 +37,13 @@ export function AnalyticsDashboard({ onClose }: Props) {
   })
   const stats = useQuery(api.analytics.getPipelineStats)
 
+  // Captured during the very first render (before showModal() ever runs) so it's
+  // immune to StrictMode's dev-only double-invoke of mount effects.
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+  if (previouslyFocusedRef.current === null) {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -46,7 +53,10 @@ export function AnalyticsDashboard({ onClose }: Props) {
       onCloseRef.current()
     }
     dialog.addEventListener('cancel', handleCancel)
-    return () => dialog.removeEventListener('cancel', handleCancel)
+    return () => {
+      dialog.removeEventListener('cancel', handleCancel)
+      previouslyFocusedRef.current?.focus?.()
+    }
   }, [])
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
@@ -74,10 +84,10 @@ export function AnalyticsDashboard({ onClose }: Props) {
       onClick={handleBackdropClick}
       aria-modal="true"
       aria-labelledby="analytics-title"
-      className="w-full max-w-3xl max-h-[90vh] bg-canvas rounded-card border border-border shadow-card-drag flex flex-col outline-none"
+      className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-3xl bg-canvas rounded-none sm:rounded-card border-0 sm:border sm:border-border shadow-card-drag flex flex-col outline-none"
     >
       <div onClick={e => e.stopPropagation()} className="flex flex-col flex-1 min-h-0">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border shrink-0">
           <h2
             id="analytics-title"
             className="text-[18px] text-ink"
@@ -95,13 +105,13 @@ export function AnalyticsDashboard({ onClose }: Props) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 sm:gap-6">
           {!stats ? (
             <p className="text-[13px] text-ink-muted text-center py-12">Loading…</p>
           ) : (
             <>
               {/* Summary stats */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <StatCard label="Total applications" value={stats.total} />
                 <StatCard label="Applied" value={stats.applied} />
                 <StatCard
@@ -117,7 +127,7 @@ export function AnalyticsDashboard({ onClose }: Props) {
               </div>
 
               {/* Stage funnel */}
-              <section className="bg-card border border-border rounded-card p-5">
+              <section className="bg-card border border-border rounded-card p-4 sm:p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-4">
                   Current pipeline
                 </h3>
@@ -126,19 +136,19 @@ export function AnalyticsDashboard({ onClose }: Props) {
                     const count = stats.stageCounts[stage.id] ?? 0
                     const avgDays = stats.avgDaysPerStage[stage.id]
                     return (
-                      <div key={stage.id} className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 w-28 shrink-0">
+                      <div key={stage.id} className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1.5 sm:gap-2 w-20 sm:w-28 shrink-0">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
-                          <span className="text-[13px] text-ink-muted truncate">{stage.label}</span>
+                          <span className="text-[12px] sm:text-[13px] text-ink-muted truncate">{stage.label}</span>
                         </div>
                         <Bar value={count} max={maxStageCount} color={stage.color} />
                         <span className="text-[13px] font-medium text-ink w-4 text-right shrink-0">{count}</span>
                         {avgDays !== undefined ? (
-                          <span className="text-[11px] text-ink-muted w-20 text-right shrink-0">
+                          <span className="hidden sm:inline text-[11px] text-ink-muted w-20 text-right shrink-0">
                             avg {avgDays}d
                           </span>
                         ) : (
-                          <span className="w-20 shrink-0" />
+                          <span className="hidden sm:inline w-20 shrink-0" />
                         )}
                       </div>
                     )
@@ -147,11 +157,11 @@ export function AnalyticsDashboard({ onClose }: Props) {
               </section>
 
               {/* Weekly timeline */}
-              <section className="bg-card border border-border rounded-card p-5">
+              <section className="bg-card border border-border rounded-card p-4 sm:p-5">
                 <h3 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest mb-4">
-                  Applications submitted — last 12 weeks
+                  Applications submitted — last 8 weeks
                 </h3>
-                <div className="flex items-end gap-2 h-28">
+                <div className="flex items-end gap-1.5 sm:gap-2 h-28">
                   {stats.weeks.map((week, i) => {
                     const pct = maxWeekCount > 0 ? (week.count / maxWeekCount) * 100 : 0
                     return (

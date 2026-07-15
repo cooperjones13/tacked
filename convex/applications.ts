@@ -39,6 +39,7 @@ export const create = mutation({
     stage: stageV,
     appliedDate: v.union(v.string(), v.null()),
     notes: v.string(),
+    extracting: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
@@ -58,6 +59,9 @@ export const update = mutation({
     stage: v.optional(stageV),
     appliedDate: v.optional(v.union(v.string(), v.null())),
     notes: v.optional(v.string()),
+    archived: v.optional(v.boolean()),
+    extracting: v.optional(v.boolean()),
+    extractionFailed: v.optional(v.boolean()),
   },
   handler: async (ctx, { id, ...patch }) => {
     const userId = await requireUser(ctx)
@@ -91,5 +95,27 @@ export const remove = mutation({
     const app = await ctx.db.get(id)
     if (!app || app.userId !== userId) throw new Error('Not found')
     await ctx.db.delete(id)
+  },
+})
+
+export const removeMany = mutation({
+  args: { ids: v.array(v.id('applications')) },
+  handler: async (ctx, { ids }) => {
+    const userId = await requireUser(ctx)
+    for (const id of ids) {
+      const app = await ctx.db.get(id)
+      if (app && app.userId === userId) await ctx.db.delete(id)
+    }
+  },
+})
+
+export const archiveMany = mutation({
+  args: { ids: v.array(v.id('applications')), archived: v.boolean() },
+  handler: async (ctx, { ids, archived }) => {
+    const userId = await requireUser(ctx)
+    for (const id of ids) {
+      const app = await ctx.db.get(id)
+      if (app && app.userId === userId) await ctx.db.patch(id, { archived })
+    }
   },
 })

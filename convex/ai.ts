@@ -2,7 +2,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { action } from './_generated/server'
-import { internal } from './_generated/api'
+import { api, internal } from './_generated/api'
 // coverLetters and interviewPreps are persisted via internal mutations
 import { v } from 'convex/values'
 
@@ -135,75 +135,123 @@ interface ExtractedJob {
   jdText: string
 }
 
-export const extractJobFromUrl = action({
-  args: { url: v.string() },
-  handler: async (_ctx, { url }): Promise<ExtractedJob> => {
-    // Jina AI Reader renders JavaScript-heavy pages and returns clean text.
-    // Falls back to direct HTML fetch if Jina fails.
-    let text: string
-    try {
-      const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
-        headers: { Accept: 'text/plain', 'X-Return-Format': 'text' },
-      })
-      if (!jinaRes.ok) throw new Error('Jina failed')
-      text = (await jinaRes.text()).slice(0, 80000)
-    } catch {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-        },
-      })
-      if (!res.ok) throw new Error(`Could not fetch that URL (${res.status})`)
-      const html = await res.text()
-      text = html
-        .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/\s{2,}/g, ' ')
-        .trim()
-        .slice(0, 80000)
+function stripHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+// Most job boards render enough of the posting server-side for a plain fetch
+// to work, so we try that first — it's usually well under a second. Jina's
+// headless-browser reader handles JS-only pages but can take 10s+, so it's
+// only used as a fallback, and only for a bounded amount of time.
+async function fetchPageText(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+      },
+    })
+    if (res.ok) {
+      const text = stripHtml(await res.text())
+      if (text.length > 500) return text.slice(0, 60000)
+    }
+  } catch {
+    // fall through to Jina
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 12000)
+  try {
+    const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
+      headers: { Accept: 'text/plain', 'X-Return-Format': 'text' },
+      signal: controller.signal,
+    })
+    if (!jinaRes.ok) throw new Error('Jina failed')
+    return (await jinaRes.text()).slice(0, 60000)
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+// Fills in an already-created (placeholder) application in the background —
+// the client creates the application immediately with `extracting: true` and
+// closes its modal right away, then this fills in the real fields once the
+// scrape + extraction finishes.
+export const extractJobIntoApplication = action({
+  args: { applicationId: v.id('applications'), url: v.string() },
+  handler: async (ctx, { applicationId, url }): Promise<void> => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthenticated')
+
+    const application = await ctx.runQuery(internal.applications.get, { id: applicationId })
+    if (!application || application.userId !== identity.subject) {
+      throw new Error('Application not found')
     }
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    try {
+      const text = await fetchPageText(url)
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 4096,
-      tools: [
-        {
-          name: 'extract_job',
-          description: 'Extract structured job information from a job posting page',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              company: { type: 'string', description: 'Company name' },
-              role: { type: 'string', description: 'Job title / role' },
-              location: { type: 'string', description: 'Location or "Remote"' },
-              salary: { type: 'string', description: 'Salary, formatted as "$XXXk–$XXXk" for ranges, or a short label like "Negotiable", "Competitive", or "DOE" for vague descriptions. Never more than 5 words. Empty string if not mentioned.' },
-              jdText: { type: 'string', description: 'The COMPLETE job description text verbatim — all responsibilities, requirements, qualifications, and about sections. Do not summarize or shorten. This is the most important field.' },
+      const response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 4096,
+        tools: [
+          {
+            name: 'extract_job',
+            description: 'Extract structured job information from a job posting page',
+            input_schema: {
+              type: 'object' as const,
+              properties: {
+                company: { type: 'string', description: 'Company name' },
+                role: { type: 'string', description: 'Job title / role' },
+                location: { type: 'string', description: 'Location or "Remote"' },
+                salary: { type: 'string', description: 'Salary, formatted as "$XXXk–$XXXk" for ranges, or a short label like "Negotiable", "Competitive", or "DOE" for vague descriptions. Never more than 5 words. Empty string if not mentioned.' },
+                jdText: { type: 'string', description: 'The COMPLETE job description text verbatim — all responsibilities, requirements, qualifications, and about sections. Do not summarize or shorten. This is the most important field.' },
+              },
+              required: ['company', 'role', 'location', 'salary', 'jdText'],
             },
-            required: ['company', 'role', 'location', 'salary', 'jdText'],
           },
-        },
-      ],
-      tool_choice: { type: 'tool', name: 'extract_job' },
-      messages: [
-        {
-          role: 'user',
-          content: `Extract the job posting details from this page. For jdText, copy the COMPLETE job description verbatim — every responsibility, requirement, and qualification. Do not summarize.\n\nPage content:\n${text}`,
-        },
-      ],
-    })
+        ],
+        tool_choice: { type: 'tool', name: 'extract_job' },
+        messages: [
+          {
+            role: 'user',
+            content: `Extract the job posting details from this page. For jdText, copy the COMPLETE job description verbatim — every responsibility, requirement, and qualification. Do not summarize.\n\nPage content:\n${text}`,
+          },
+        ],
+      })
 
-    const toolUse = response.content.find(b => b.type === 'tool_use')
-    if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Could not extract job info from that page')
-    return toolUse.input as ExtractedJob
+      const toolUse = response.content.find(b => b.type === 'tool_use')
+      if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Could not extract job info from that page')
+      const job = toolUse.input as ExtractedJob
+
+      await ctx.runMutation(api.applications.update, {
+        id: applicationId,
+        company: job.company,
+        role: job.role,
+        location: job.location,
+        salary: job.salary,
+        jdText: job.jdText,
+        extracting: false,
+      })
+    } catch (e) {
+      await ctx.runMutation(api.applications.update, {
+        id: applicationId,
+        extracting: false,
+        extractionFailed: true,
+      })
+      throw e
+    }
   },
 })
 

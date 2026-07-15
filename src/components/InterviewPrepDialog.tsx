@@ -59,6 +59,13 @@ export function InterviewPrepDialog({ prep, regenerating, onRegenerate, onClose 
   })
   const [activeSection, setActiveSection] = useState<keyof InterviewPrep>('behavioral')
 
+  // Captured during the very first render (before showModal() ever runs) so it's
+  // immune to StrictMode's dev-only double-invoke of mount effects.
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+  if (previouslyFocusedRef.current === null) {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -68,7 +75,10 @@ export function InterviewPrepDialog({ prep, regenerating, onRegenerate, onClose 
       onCloseRef.current()
     }
     dialog.addEventListener('cancel', handleCancel)
-    return () => dialog.removeEventListener('cancel', handleCancel)
+    return () => {
+      dialog.removeEventListener('cancel', handleCancel)
+      previouslyFocusedRef.current?.focus?.()
+    }
   }, [])
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {

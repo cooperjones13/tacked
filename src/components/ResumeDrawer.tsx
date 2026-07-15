@@ -33,6 +33,13 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
     onCloseRef.current = onClose
   })
 
+  // Captured during the very first render (before showModal() ever runs) so it's
+  // immune to StrictMode's dev-only double-invoke of mount effects.
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+  if (previouslyFocusedRef.current === null) {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -42,7 +49,10 @@ function PdfPreviewDialog({ resumeId, label, onClose }: PreviewProps) {
       onCloseRef.current()
     }
     dialog.addEventListener('cancel', handleCancel)
-    return () => dialog.removeEventListener('cancel', handleCancel)
+    return () => {
+      dialog.removeEventListener('cancel', handleCancel)
+      previouslyFocusedRef.current?.focus?.()
+    }
   }, [])
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
@@ -123,6 +133,13 @@ function ResumeModal({ onClose }: { onClose: () => void }) {
   const [draftLabel, setDraftLabel] = useState('')
   const [previewId, setPreviewId] = useState<Id<'resumes'> | null>(null)
 
+  // Captured during the very first render (before showModal() ever runs) so it's
+  // immune to StrictMode's dev-only double-invoke of mount effects.
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+  if (previouslyFocusedRef.current === null) {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement
+  }
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
@@ -134,7 +151,10 @@ function ResumeModal({ onClose }: { onClose: () => void }) {
       onCloseRef.current()
     }
     dialog.addEventListener('cancel', handleCancel)
-    return () => dialog.removeEventListener('cancel', handleCancel)
+    return () => {
+      dialog.removeEventListener('cancel', handleCancel)
+      previouslyFocusedRef.current?.focus?.()
+    }
   }, [])
 
   useEffect(() => {

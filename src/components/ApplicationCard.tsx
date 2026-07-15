@@ -14,9 +14,9 @@ function formatDate(dateStr: string | null): string | null {
 }
 
 function fitScoreColor(score: number) {
-  if (score >= 70) return 'var(--color-stage-offer)'
-  if (score >= 40) return 'var(--color-stage-interview)'
-  return 'var(--color-stage-rejected)'
+  if (score >= 70) return 'var(--color-stage-offer-text)'
+  if (score >= 40) return 'var(--color-stage-interview-text)'
+  return 'var(--color-stage-rejected-text)'
 }
 
 function IconDoc({ title }: { title: string }) {
@@ -48,76 +48,112 @@ interface CardVisualProps {
   fitScore?: number
   aiStatus?: { letter: boolean; prep: boolean }
   isOverlay?: boolean
+  selectionMode?: boolean
+  selected?: boolean
 }
 
-function CardVisual({ application, fitScore, aiStatus, isOverlay = false }: CardVisualProps) {
+function CardVisual({ application, fitScore, aiStatus, isOverlay = false, selectionMode = false, selected = false }: CardVisualProps) {
   const stage = getStageConfig(application.stage)
   const date = formatDate(application.appliedDate)
 
   return (
     <div
       className={[
-        'bg-card border border-border rounded-card p-3.5 select-none',
+        'bg-card border rounded-card p-3.5 select-none flex flex-col min-h-[120px]',
+        selected ? 'border-accent ring-2 ring-accent/40' : 'border-border',
         isOverlay
           ? 'shadow-card-drag rotate-1'
           : 'shadow-card transition-shadow duration-150 hover:shadow-card-drag',
       ].join(' ')}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span
-          className="w-2 h-2 rounded-full shrink-0"
-          style={{ backgroundColor: stage.color }}
-          aria-hidden="true"
-        />
-        <span className="text-[15px] font-semibold text-ink leading-tight truncate flex-1">
-          {application.company}
-        </span>
-        {fitScore !== undefined && (
+        {selectionMode ? (
           <span
-            className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 rounded"
-            style={{
-              color: fitScoreColor(fitScore),
-              backgroundColor: `color-mix(in srgb, ${fitScoreColor(fitScore)} 12%, transparent)`,
-            }}
+            role="checkbox"
+            aria-checked={selected}
+            aria-label={`Select ${application.company}`}
+            className={[
+              'w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
+              selected ? 'bg-accent-btn border-accent-btn' : 'bg-card border-border',
+            ].join(' ')}
           >
-            {fitScore}
+            {selected && (
+              <svg width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden="true">
+                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </span>
+        ) : (
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: stage.color }}
+            aria-hidden="true"
+          />
+        )}
+        {application.extracting ? (
+          <div className="h-4 rounded bg-column animate-pulse flex-1 max-w-[65%]" aria-hidden="true" />
+        ) : (
+          <>
+            <span className="text-[15px] font-semibold text-ink leading-tight truncate flex-1">
+              {application.company}
+            </span>
+            {(aiStatus?.letter || aiStatus?.prep) && (
+              <span className="shrink-0 flex items-center gap-1 text-ink-muted/60" aria-label="AI content available">
+                {aiStatus.letter && (
+                  <span title="Cover letter generated">
+                    <IconDoc title="Cover letter" />
+                  </span>
+                )}
+                {aiStatus.prep && (
+                  <span title="Interview prep generated">
+                    <IconChat title="Interview prep" />
+                  </span>
+                )}
+              </span>
+            )}
+            {fitScore !== undefined && (
+              <span
+                className="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 rounded"
+                style={{
+                  color: fitScoreColor(fitScore),
+                  backgroundColor: `color-mix(in srgb, ${fitScoreColor(fitScore)} 12%, transparent)`,
+                }}
+              >
+                {fitScore}
+              </span>
+            )}
+          </>
         )}
       </div>
 
-      <p className="text-[13px] font-medium text-ink-muted leading-snug mb-2.5 truncate">
-        {application.role}
-      </p>
+      {application.extracting ? (
+        <>
+          <p className="text-[12px] text-ink-muted/60 italic leading-snug mb-1.5">
+            Fetching job details…
+          </p>
+          <div className="flex flex-col gap-1.5 mt-auto" aria-hidden="true">
+            <div className="h-2.5 rounded bg-column animate-pulse w-1/2" />
+            <div className="h-2.5 rounded bg-column animate-pulse w-2/5" />
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-[13px] font-medium text-ink-muted leading-snug mb-1 truncate">
+            {application.role}
+          </p>
 
-      <div className="flex items-center gap-1.5 text-[12px] text-ink-muted flex-wrap">
-        {application.location && <span>{application.location}</span>}
-        {application.salary && (
-          <>
-            <span className="text-border select-none">·</span>
-            <span>{application.salary}</span>
-          </>
-        )}
-        {date && (
-          <>
-            <span className="text-border select-none">·</span>
-            <span>{date}</span>
-          </>
-        )}
-        {(aiStatus?.letter || aiStatus?.prep) && (
-          <span className="ml-auto flex items-center gap-1 text-ink-muted/60" aria-label="AI content available">
-            {aiStatus.letter && (
-              <span title="Cover letter generated">
-                <IconDoc title="Cover letter" />
-              </span>
-            )}
-            {aiStatus.prep && (
-              <span title="Interview prep generated">
-                <IconChat title="Interview prep" />
-              </span>
-            )}
-          </span>
-        )}
-      </div>
+          {application.location && (
+            <p className="text-[12px] text-ink-muted truncate mb-1">
+              {application.location}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between gap-2 text-[12px] text-ink-muted mt-auto">
+            <span className="truncate">{application.salary}</span>
+            {date && <span className="shrink-0">{date}</span>}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -127,12 +163,14 @@ interface ApplicationCardProps {
   fitScore?: number
   aiStatus?: { letter: boolean; prep: boolean }
   onClick?: () => void
+  selectionMode?: boolean
+  selected?: boolean
 }
 
-export function ApplicationCard({ application, fitScore, aiStatus, onClick }: ApplicationCardProps) {
+export function ApplicationCard({ application, fitScore, aiStatus, onClick, selectionMode = false, selected = false }: ApplicationCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: application.id,
-    data: { stage: application.stage },
+    disabled: application.pending,
   })
 
   const style: CSSProperties = {
@@ -147,11 +185,14 @@ export function ApplicationCard({ application, fitScore, aiStatus, onClick }: Ap
       style={style}
       onClick={onClick}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
-      className="w-full sm:w-[260px] cursor-grab active:cursor-grabbing rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      className={[
+        'w-full rounded-card focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+        selectionMode ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing',
+      ].join(' ')}
       {...listeners}
       {...attributes}
     >
-      <CardVisual application={application} fitScore={fitScore} aiStatus={aiStatus} />
+      <CardVisual application={application} fitScore={fitScore} aiStatus={aiStatus} selectionMode={selectionMode} selected={selected} />
     </div>
   )
 }

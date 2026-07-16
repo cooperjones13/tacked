@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, type FormEvent, type ReactNode } from 'react'
 import type { Application, Stage } from '../types'
 import { STAGES } from '../types'
+import { localTodayISO } from '../utils/date'
 
 const inputCls =
   'w-full rounded-button border border-border bg-canvas px-3 py-2 text-[13px] text-ink ' +
@@ -373,7 +374,7 @@ function ManualForm({
               />
               <button
                 type="button"
-                onClick={() => set('appliedDate', new Date().toISOString().split('T')[0])}
+                onClick={() => set('appliedDate', localTodayISO())}
                 className="px-3 py-2 rounded-button border border-border text-[13px] font-medium text-ink-muted hover:text-ink hover:bg-column transition-colors focus-visible:ring-2 focus-visible:ring-accent whitespace-nowrap"
               >
                 Today

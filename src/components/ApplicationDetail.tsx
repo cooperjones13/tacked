@@ -8,6 +8,7 @@ import { PositioningPanel } from './PositioningPanel'
 import { CoverLetterDialog } from './CoverLetterDialog'
 import { InterviewPrepDialog } from './InterviewPrepDialog'
 import { md } from '../utils/md'
+import { parseLocalDate } from '../utils/date'
 
 const inputCls =
   'w-full rounded-button border border-border bg-canvas px-3 py-2 text-[13px] text-ink ' +
@@ -245,7 +246,7 @@ export function ApplicationDetail({ application, onClose, onUpdate, onDelete, on
     STAGES.find(s => s.id === (overviewEditing ? draft.stage : application.stage)) ?? STAGES[0]
 
   const formattedDate = application.appliedDate
-    ? new Date(application.appliedDate).toLocaleDateString('en-US', {
+    ? parseLocalDate(application.appliedDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

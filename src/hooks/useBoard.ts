@@ -2,6 +2,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import type { Application, Stage } from '../types'
+import { localTodayISO } from '../utils/date'
 
 type Patch = Partial<Omit<Application, 'id' | 'createdAt' | 'pending'>>
 
@@ -59,7 +60,9 @@ export function useBoard() {
     }
   )
   const updateMutation = useMutation(api.applications.update).withOptimisticUpdate(
-    (localStore, { id, ...patch }) => {
+    (localStore, args) => {
+      const { id, clientToday, ...patch } = args
+      void clientToday
       const current = localStore.getQuery(api.applications.list, {})
       if (current === undefined) return
       localStore.setQuery(
@@ -128,7 +131,7 @@ export function useBoard() {
   }
 
   function updateApplication(id: string, patch: Patch) {
-    return updateMutation({ id: id as Id<'applications'>, ...patch })
+    return updateMutation({ id: id as Id<'applications'>, clientToday: localTodayISO(), ...patch })
   }
 
   function deleteApplication(id: string) {

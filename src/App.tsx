@@ -17,6 +17,7 @@ import { Toaster } from './components/Toaster'
 import type { Toast } from './components/Toaster'
 import { Landing } from './components/Landing'
 import { Logo } from './components/Logo'
+import { localTodayISO, parseLocalDate } from './utils/date'
 import type { Application, Stage, Filters } from './types'
 import { DEFAULT_FILTERS } from './types'
 
@@ -94,12 +95,11 @@ function applyFilters(
     if (filters.dateRange !== 'all') {
       if (!app.appliedDate) return false
       if (filters.dateRange === 'today') {
-        const today = new Date().toISOString().split('T')[0]
-        if (app.appliedDate !== today) return false
+        if (app.appliedDate !== localTodayISO()) return false
       } else {
         const days = filters.dateRange === '7d' ? 7 : filters.dateRange === '30d' ? 30 : filters.dateRange === '90d' ? 90 : 365
         const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-        if (new Date(app.appliedDate) < cutoff) return false
+        if (parseLocalDate(app.appliedDate) < cutoff) return false
       }
     }
 

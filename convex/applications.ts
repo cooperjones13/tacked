@@ -62,8 +62,9 @@ export const update = mutation({
     archived: v.optional(v.boolean()),
     extracting: v.optional(v.boolean()),
     extractionFailed: v.optional(v.boolean()),
+    clientToday: v.optional(v.string()),
   },
-  handler: async (ctx, { id, ...patch }) => {
+  handler: async (ctx, { id, clientToday, ...patch }) => {
     const userId = await requireUser(ctx)
     const app = await ctx.db.get(id)
     if (!app || app.userId !== userId) throw new Error('Not found')
@@ -78,10 +79,13 @@ export const update = mutation({
       })
     }
 
-    // Auto-fill applied date when first moved to 'applied'
+    // Auto-fill applied date when first moved to 'applied'. Uses the
+    // client's local calendar date (clientToday) when provided — the server
+    // has no notion of the user's timezone, so falling back to its own
+    // clock here would silently pick the wrong day near midnight.
     const autoDate =
       patch.stage === 'applied' && !app.appliedDate && patch.appliedDate === undefined
-        ? { appliedDate: new Date().toISOString().split('T')[0] }
+        ? { appliedDate: clientToday ?? new Date().toISOString().split('T')[0] }
         : {}
 
     await ctx.db.patch(id, { ...patch, ...autoDate })

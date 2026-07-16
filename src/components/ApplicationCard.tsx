@@ -3,6 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import type { Application, StageConfig } from '../types'
 import { STAGES } from '../types'
+import { parseLocalDate } from '../utils/date'
 
 function getStageConfig(stage: Application['stage']): StageConfig {
   return STAGES.find(s => s.id === stage) ?? STAGES[0]
@@ -10,7 +11,7 @@ function getStageConfig(stage: Application['stage']): StageConfig {
 
 function formatDate(dateStr: string | null): string | null {
   if (!dateStr) return null
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return parseLocalDate(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function fitScoreColor(score: number) {
